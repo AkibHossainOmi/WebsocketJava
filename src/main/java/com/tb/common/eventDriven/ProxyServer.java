@@ -1,4 +1,4 @@
-package com.tb.common.adapters;
+package com.tb.common.eventDriven;
 
 import com.tb.common.Communicator.ConnectionStatus;
 

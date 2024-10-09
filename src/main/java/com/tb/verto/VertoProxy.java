@@ -3,13 +3,11 @@ import com.tb.calling.CallState;
 import com.tb.calling.CallStateTracker;
 import com.tb.calling.VertoCall;
 import com.tb.common.Communicator.ConnectionStatus;
-import com.tb.common.adapters.ProxyClient;
-import com.tb.common.adapters.ProxyServer;
+import com.tb.common.eventDriven.ProxyClient;
+import com.tb.common.eventDriven.ProxyServer;
 import com.tb.webSocket.*;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
