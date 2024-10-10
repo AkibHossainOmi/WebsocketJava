@@ -7,7 +7,7 @@ public class VertoConnectParams {
     String login;
     String password;
     WebSocketSettings webSocketSettings;
-
+    int heartbitIntervalSec =1;
     public KeepAliveParams getKeepAliveParams() {
         return keepAliveParams;
     }

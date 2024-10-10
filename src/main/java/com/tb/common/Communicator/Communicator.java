@@ -43,7 +43,7 @@ public abstract class Communicator implements
         if(this.keepAliveParams !=null) {
             this.scheduler = Executors.newScheduledThreadPool(1);
             this.scheduler.scheduleAtFixedRate(this.keepAliveMethod,
-                    keepAliveParams.initialDelaySec, keepAliveParams.periodSec,
+                    keepAliveParams.initialDelay, keepAliveParams.period,
                     TimeUnit.SECONDS); // Initial delay of 0 seconds, repeat every 1 second
         }
     }

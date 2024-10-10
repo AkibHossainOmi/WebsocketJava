@@ -2,6 +2,7 @@ package com.tb.verto;
 
 import com.tb.WebSocketWrapper;
 import com.tb.common.Communicator.Transport;
+import com.tb.common.eventDriven.HeartbeatSender;
 import com.tb.verto.msgTemplates.*;
 import com.tb.webSocket.*;
 import java.util.Random;
@@ -10,12 +11,13 @@ import java.util.UUID;
 class VertoCommunicator extends WebSocketWrapper {
     final String login;
     final String password;
-    final int pingSerialNoStart;
     final String webSocketUrl;
     Transport webSocket;
     VertoConnectParams params;
     private String callId;
     private String sessionId;
+    VertoPingFactory pingFactory;
+    HeartbeatSender heartbeatSender;
     public VertoCommunicator(VertoConnectParams params) {
         super(params.getKeepAliveParams(),params.getWebSocketSettings());
         super.setConnectMethod(()->{
@@ -23,10 +25,9 @@ class VertoCommunicator extends WebSocketWrapper {
         });
         this.params=params;
         Random random = new Random();
-        this.pingSerialNoStart = 1000 + random.nextInt(1000000);
         if (params.getKeepAliveParams() !=null){
             super.setKeepAliveMethod(() -> {
-                String pingMessage = Ping.createMessage(this.pingSerialNoStart);
+                String pingMessage = Ping.createMessage(this.freeSwitchMsgCounter);
                 //webSocket.sendMessage(new WsSentData(pingMessage, true));
                 //System.out.println("Sent verto ping: " + pingMessage);
             });
@@ -40,19 +41,15 @@ class VertoCommunicator extends WebSocketWrapper {
             throw new RuntimeException(e);
         }
         sendCall();
-        if (getKeepAliveParam()!=null){
-            startKeepAlive();
+        if (super.getKeepAliveParam()!=null){
+            this.heartbeatSender = new HeartbeatSender(super.getKeepAliveParam(), this.pingFactory,this.getWebSocket());
         }
         sendHangup();
         this.login = params.getLogin();//verto login
         this.password = params.getPassword();//verto pass
         this.webSocketUrl=params.getWebSocketSettings().getUri();
-    }
+        this.pingFactory= new VertoPingFactory();
 
-    private void ping() {
-        WsSentData data = new WsSentData(Ping.createMessage(5));
-        System.out.println(data.getData());
-        webSocket.sendMessage(data);
     }
     private void login() {
         sessionId = UUID.randomUUID().toString();
@@ -63,7 +60,10 @@ class VertoCommunicator extends WebSocketWrapper {
                         sessionId,new Random().nextInt()));
         webSocket.sendMessage(data);
     }
-
+    public WsSentData createPingRequest() {
+        WsSentData data = new WsSentData(Ping.createMessage(5));
+        return data;
+    }
     private void sendCall() {
         callId = UUID.randomUUID().toString();
         WsSentData data =
@@ -101,11 +101,6 @@ class VertoCommunicator extends WebSocketWrapper {
     public void onMessage(WsOnMsgData wsOnMsgData) {
 
     }
-
-   /* @Override
-    public void sendMessage(WsSentData wsSentData) {
-
-    }*/
 
     @Override
     public void onError(WsOnErrorData wsOnErrorData) {

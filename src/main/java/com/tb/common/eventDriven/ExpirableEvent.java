@@ -8,7 +8,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class ExpirableEvent<TResp> {
+public abstract class ExpirableEvent<TResp> implements Event {
     private String id;
     private TResp response;
     private final LocalDateTime eventTime; // Time when the event was created
@@ -17,7 +17,7 @@ public abstract class ExpirableEvent<TResp> {
     private final List<EventListener> listeners = new ArrayList<>(); // List of listeners
     private final ScheduledExecutorService expirationScheduler;
     public abstract String getId();
-    public ExpirableEvent(String id,int expirationInSeconds, List<EventListener> listeners) {
+    public ExpirableEvent(String id,int expirationInSeconds) {
         this.id=id;
         this.eventTime = LocalDateTime.now();
         this.expiredOn = this.eventTime.plusSeconds(expirationInSeconds);
