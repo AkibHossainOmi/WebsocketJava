@@ -58,13 +58,13 @@ public class ServiceHealthMonitor {
         if (pingOrKeepAlive == PingOrKeepAlive.PING) {
             if (pingRunning) return;
             servicePingScheduler.scheduleAtFixedRate(() -> {
-                ExpirableEvent request = serviceHealthUtil.createServicePing();
+                ExpirableEvent request = serviceHealthUtil.createServicePingMsg();
                 this.transport.sendMessage(request);
             }, this.pingParams.initialDelay, pingParams.period, pingParams.timeUnit);
         } else {
             if (keepAliveRunning) return;
             keepAliveScheduler.scheduleAtFixedRate(() -> {
-                ExpirableEvent request = serviceHealthUtil.createKeepAlive();
+                ExpirableEvent request = serviceHealthUtil.createKeepAliveMsg();
                 this.transport.sendMessage(request);
             }, keepAliveParams.initialDelay, keepAliveParams.period, keepAliveParams.timeUnit);
         }

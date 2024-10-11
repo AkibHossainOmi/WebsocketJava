@@ -8,7 +8,7 @@ import com.tb.webSocket.WsSentData;
 public class VertoPingUtil implements ServiceHealthUtil<WsSentData> {
     UniqueIntGenerator intGenerator
     @Override
-    public WsSentData createServicePing() {
+    public WsSentData createServicePingMsg() {
         return new WsSentData(Ping.createMessage(pingSerialAsInput));
     }
 }

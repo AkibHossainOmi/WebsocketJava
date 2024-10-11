@@ -116,13 +116,14 @@ class VertoConnector implements Connector, ServiceHealthUtil {
     }
 
     @Override
-    public ExpirableEvent createKeepAlive() {
+    public ExpirableEvent createServicePingMsg() {
+        return null;
+    }
+    @Override
+    public ExpirableEvent createKeepAliveMsg() {
         return null;
     }
 
-    @Override
-    public ExpirableEvent createServicePing() {
-        return null;
-    }
+
 }
 
