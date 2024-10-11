@@ -17,12 +17,12 @@ import java.util.concurrent.TimeUnit;
 public class VertoProxy implements
         ProxyServer<WsOnOpenData, WsOnCloseData, WsOnMsgData, WsSentData, WsOnErrorData, WsOnStatusData>,
         ProxyClient<WsOnOpenData, WsOnCloseData, WsOnMsgData, WsSentData, WsOnErrorData, WsOnStatusData> {
-    private VertoCommunicator server; // Server-side communicator
+    private VertoConnector server; // Server-side communicator
     private final CallStateTracker callStateTracker = new CallStateTracker(); // State tracker
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private static final int MAX_CALL_DURATION_MINUTES = 120; // Predefined call duration limit
     public VertoProxy(VertoConnectParams params) {
-        this.server= new VertoCommunicator(params);
+        this.server= new VertoConnector(params);
         server.connectOrReconnect();
         // Start the scheduler to monitor call duration
         scheduler.scheduleAtFixedRate(this::checkCallDurations, 0, 1, TimeUnit.MINUTES);

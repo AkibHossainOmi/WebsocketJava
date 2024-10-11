@@ -1,4 +1,5 @@
 package com.tb.common.eventDriven;
 
-public interface SocketMessage {
+public interface SocketData {
+
 }

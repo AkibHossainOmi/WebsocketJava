@@ -1,6 +1,6 @@
 package com.tb.verto;
 
-import com.tb.common.Communicator.KeepAliveParams;
+import com.tb.common.Communicator.ServicePingParams;
 import com.tb.webSocket.WebSocketSettings;
 
 public class VertoConnectParams {
@@ -8,11 +8,11 @@ public class VertoConnectParams {
     String password;
     WebSocketSettings webSocketSettings;
     int heartbitIntervalSec =1;
-    public KeepAliveParams getKeepAliveParams() {
-        return keepAliveParams;
+    public ServicePingParams getKeepAliveParams() {
+        return servicePingParams;
     }
 
-    KeepAliveParams keepAliveParams=null;
+    ServicePingParams servicePingParams =null;
     public String getLogin() {
         return login;
     }
@@ -26,10 +26,10 @@ public class VertoConnectParams {
     }
 
     public VertoConnectParams(String login, String password,
-                              WebSocketSettings webSocketSettings,KeepAliveParams keepAliveParams) {
+                              WebSocketSettings webSocketSettings, ServicePingParams servicePingParams) {
         this.login = login;
         this.password = password;
         this.webSocketSettings = webSocketSettings;
-        this.keepAliveParams=keepAliveParams;
+        this.servicePingParams = servicePingParams;
     }
 }
