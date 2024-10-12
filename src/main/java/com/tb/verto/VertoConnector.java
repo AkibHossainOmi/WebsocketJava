@@ -2,31 +2,45 @@ package com.tb.verto;
 
 import com.tb.WebSocketWrapper;
 import com.tb.common.Communicator.Connector;
+import com.tb.common.Communicator.InternalSocket.Transport;
+import com.tb.common.Communicator.InternalSocket.TransportListener;
+import com.tb.common.Communicator.Payload;
 import com.tb.common.eventDriven.ExpirableEvent;
-import com.tb.common.eventDriven.ServiceHealthUtil;
-import com.tb.common.eventDriven.ServiceHealthMonitor;
+import com.tb.common.eventDriven.ServiceHealthTracker;
+import com.tb.common.eventDriven.UniqueIntGenerator;
 import com.tb.verto.msgTemplates.*;
-import com.tb.webSocket.*;
+import jdk.jshell.spi.ExecutionControl;
 
-import java.net.http.WebSocket;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.CompletionStage;
 
-class VertoConnector implements Connector, ServiceHealthUtil {
+class VertoConnector implements Connector{
     //Transport webSocket;
     VertoConnectParams params;
-    private String callId;
-    private String sessionId;
-    VertoPingUtil pingFactory;
-    ServiceHealthMonitor serviceHealthMonitor;
+    ServiceHealthTracker serviceHealthTracker;
     WebSocketWrapper transport;
-    WebSocket.Listener webSocetListener;
+    TransportListener<String> transportListener;
+    UniqueIntGenerator intGenerator= new UniqueIntGenerator(0);
+
+    public int getPingExpiresInSec() {
+        return pingExpiresInSec;
+    }
+
+    public void setPingExpiresInSec(int pingExpiresInSec) {
+        this.pingExpiresInSec = pingExpiresInSec;
+    }
+
+    int pingExpiresInSec=2;
     public VertoConnector(VertoConnectParams params) {
         this.params=params;
         Random random = new Random();
         this.transport = new WebSocketWrapper(params.getWebSocketSettings());
-        this.transport.connect(createWsListener(this));
+        this.transportListener = createTransportListener(this);
+        this.transport.addListener(this.transportListener);
+        this.serviceHealthTracker =
+                new ServiceHealthTracker<String>(this.transport,params.servicePingParams,
+                null,this);
+        serviceHealthTracker.startServicePingMonitor();
         login();
         //ping();
         try {
@@ -35,11 +49,41 @@ class VertoConnector implements Connector, ServiceHealthUtil {
             throw new RuntimeException(e);
         }
         sendCall();
-        this.serviceHealthMonitor = new ServiceHealthMonitor(web params.servicePingParams);
+        //this.serviceHealthMonitor = new ServiceHealthMonitor(web params.servicePingParams);
         sendHangup();
-        this.pingFactory= new VertoPingUtil();
+        //this.pingFactory= new VertoPingUtil();
 
     }
+
+    private TransportListener createTransportListener(VertoConnector self) {
+        return new TransportListener<String>() {
+            @Override
+            public void onTransportOpen(String data) {
+
+            }
+
+            @Override
+            public void onTransportClose(String data) {
+
+            }
+
+            @Override
+            public void onTransportMessage(String data) {
+                self.onMessage(new Payload(data));
+            }
+
+            @Override
+            public void onTransportError(String data) {
+
+            }
+
+            @Override
+            public void onTransportStatus(String data) {
+
+            }
+        };
+    }
+
     private void login() {
         sessionId = UUID.randomUUID().toString();
         String data =
@@ -59,71 +103,44 @@ class VertoConnector implements Connector, ServiceHealthUtil {
         System.out.println(data);
         transport.sendMessage(data);
     }
-    //@Override
-    protected void startReconnectScheduler() {
-
+    @Override
+    public Payload createServicePingMsg() {
+        return new Payload(Ping.createMessage(intGenerator.getNext()));
     }
-    public void checkConnectionState() {
-    }
-    private WebSocket.Listener createWsListener(Connector connector) {
-        WebSocket.Listener listener = new WebSocket.Listener() {
-            @Override
-            public void onOpen(WebSocket webSocket) {
-                System.out.println("Connected to WebSocket");
-                webSocket.request(1); // Request to receive the next message
-            }
-
-            @Override
-            public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
-                System.out.println("Received message from websocket: " + data);
-                connector.onMessage(new WsOnMsgData(webSocket, data, last));
-                webSocket.request(1); // Request to receive the next message
-                return null;
-            }
-
-            @Override
-            public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
-                System.out.println("WebSocket closed: " + statusCode + " - " + reason);
-                return null;
-            }
-
-            @Override
-            public void onError(WebSocket webSocket, Throwable error) {
-                System.out.println("Websocket Error: " + error.getMessage());
-            }
-        };
-        return listener;
+    @Override
+    public Payload createKeepAliveMsg() {
+        throw new RuntimeException("Method createKeepAliveMsg is not implemented");
     }
 
     @Override
-    public void onMessage(Object o) {
+    public Transport getTransport() {
+        return this.transport;
+    }
+
+    @Override
+    public ExpirableEvent createRequestFromPayload(Payload payload) {
+        return new ExpirableEvent(intGenerator.getNext().toString(),
+                this.pingExpiresInSec,payload);
+    }
+
+    @Override
+    public void onMessage(Payload data) {
 
     }
 
     @Override
-    public void sendMessage(Object o) {
+    public void sendMessage(Payload data) {
 
     }
 
     @Override
-    public void onServicedown(String data) {
+    public void onServiceDown(Payload data) {
 
     }
 
     @Override
-    public void onServiceUp(String data) {
+    public void onServiceUp(Payload data) {
 
     }
-
-    @Override
-    public ExpirableEvent createServicePingMsg() {
-        return null;
-    }
-    @Override
-    public ExpirableEvent createKeepAliveMsg() {
-        return null;
-    }
-
-
 }
 

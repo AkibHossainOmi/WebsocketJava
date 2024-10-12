@@ -1,45 +1,34 @@
 package com.tb.common.eventDriven;
 
 import com.tb.common.Communicator.Connector;
+import com.tb.common.Communicator.Payload;
 import com.tb.common.Communicator.ServiceKeepAliveParams;
 import com.tb.common.Communicator.ServicePingParams;
-import com.tb.common.Communicator.Transport;
+import com.tb.common.Communicator.InternalSocket.Transport;
+import com.tb.verto.ServiceHealthCounter;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-public class ServiceHealthMonitor {
+public class ServiceHealthTracker {
     enum PingOrKeepAlive {PING, KEEP_ALIVE}
-
-    ;
     private final ScheduledExecutorService keepAliveScheduler = Executors.newSingleThreadScheduledExecutor();
     private final ScheduledExecutorService servicePingScheduler = Executors.newSingleThreadScheduledExecutor();
-    //private final ScheduledExecutorService scheduler;
     private ServicePingParams pingParams;
     private ServiceKeepAliveParams keepAliveParams;
-    private final ServiceHealthUtil serviceHealthUtil; // Factory for creating new requests
-    private final Transport transport;
-    private EventStore eventStore;
     private boolean pingRunning = false;
     private boolean keepAliveRunning = false;
-    private final List<Connector> listeners = new CopyOnWriteArrayList<>();
+    private Connector connector;
+    ServiceHealthCounter healthCounter;
 
-    public ServiceHealthMonitor(Transport transport, ServicePingParams pingParams,
+    public ServiceHealthTracker(Transport transport, ServicePingParams pingParams,
                                 ServiceKeepAliveParams keepAliveParams,
-                                ServiceHealthUtil serviceHealthUtil) {
-        this.transport = transport;
+                                Connector connector) {
         this.pingParams = pingParams;
         this.keepAliveParams=keepAliveParams;
-        this.serviceHealthUtil = serviceHealthUtil;
+        this.connector=connector;
+        this.healthCounter = new ServiceHealthCounter(pingParams);
     }
-
-    public void addListener(Connector connector) {
-        this.listeners.add(connector);
-    }
-
-    // Starts sending heartbeats periodically
     public void startServicePingMonitor() {
         if (this.pingParams==null){
             throw new RuntimeException("Cannot start service ping monitor because params are empty.");
@@ -58,14 +47,16 @@ public class ServiceHealthMonitor {
         if (pingOrKeepAlive == PingOrKeepAlive.PING) {
             if (pingRunning) return;
             servicePingScheduler.scheduleAtFixedRate(() -> {
-                ExpirableEvent request = serviceHealthUtil.createServicePingMsg();
-                this.transport.sendMessage(request);
+                Payload payload= connector.createServicePingMsg();
+                ExpirableEvent requestToTrack= connector.createRequestFromPayload(payload);
+                this.eventStore.add(requestToTrack);
+                this.connector.getTransport().sendMessage(request);
             }, this.pingParams.initialDelay, pingParams.period, pingParams.timeUnit);
         } else {
             if (keepAliveRunning) return;
             keepAliveScheduler.scheduleAtFixedRate(() -> {
-                ExpirableEvent request = serviceHealthUtil.createKeepAliveMsg();
-                this.transport.sendMessage(request);
+                T request = connector.createKeepAliveMsg();
+                this.connector.getTransport().sendMessage(request);
             }, keepAliveParams.initialDelay, keepAliveParams.period, keepAliveParams.timeUnit);
         }
     }
@@ -93,11 +84,10 @@ public class ServiceHealthMonitor {
             keepAliveRunning = false;
         }
     }
-
     public void sendAdhocServicePing(ExpirableEvent request){
-        this.transport.sendMessage(request);
+        this.connector.getTransport().sendMessage(request);
     }
     public void sendAdhocKeepAlive(ExpirableEvent request){
-        this.transport.sendMessage(request);
+        this.connector.getTransport().sendMessage(request);
     }
 }

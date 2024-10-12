@@ -3,14 +3,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Iterator;
 
 public class EventStore {
-    private final ConcurrentHashMap<String, ExpirableEvent<?>> eventTable = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, ExpirableEvent> eventTable = new ConcurrentHashMap<>();
     private final boolean throwIfDuplicateEvent;
     private final int maxEventsToStore;
     public EventStore(int maxEventsToStore, boolean throwIfDuplicateEvent) {
         this.throwIfDuplicateEvent = throwIfDuplicateEvent;
         this.maxEventsToStore = maxEventsToStore;
     }
-    public void add(ExpirableEvent<?> event) {
+    public void add(ExpirableEvent event) {
         String requestId = event.getId();
         if (eventTable.containsKey(requestId)) {
             if (this.throwIfDuplicateEvent) {
@@ -33,7 +33,7 @@ public class EventStore {
         }
     }
     // Optional: Add methods for retrieving or checking events
-    public ExpirableEvent<?> getEvent(String requestId) {
+    public ExpirableEvent getEvent(String requestId) {
         return eventTable.get(requestId);
     }
     public boolean containsEvent(String requestId) {

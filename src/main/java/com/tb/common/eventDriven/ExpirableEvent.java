@@ -1,5 +1,7 @@
 package com.tb.common.eventDriven;
 
+import com.tb.common.Communicator.Payload;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,18 +10,24 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class ExpirableEvent<TResp> implements Event {
+public class ExpirableEvent implements Event {
+    @Override
+    public String getId() {
+        return id;
+    }
+
     private String id;
-    private TResp response;
+    private Payload request;
+    private Payload response;
     private final LocalDateTime eventTime; // Time when the event was created
     private final LocalDateTime expiredOn; // Expiration time
     private final AtomicBoolean expired = new AtomicBoolean(false); // Flag to indicate if the event is expired
     private final List<EventListener> listeners = new ArrayList<>(); // List of listeners
     private final ScheduledExecutorService expirationScheduler;
-    public abstract String getId();
-    public ExpirableEvent(String id,int expirationInSeconds) {
+    public ExpirableEvent(String id,int expirationInSeconds, Payload request) {
         this.id=id;
         this.eventTime = LocalDateTime.now();
+        this.request=request;
         this.expiredOn = this.eventTime.plusSeconds(expirationInSeconds);
         this.listeners.addAll(listeners);
         this.expirationScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -28,7 +36,7 @@ public abstract class ExpirableEvent<TResp> implements Event {
             notifyEventExpiry(); // Notify all listeners that the event has expired
         }, expirationInSeconds, TimeUnit.SECONDS);
     }
-    public void setResponse(TResp response) {
+    public void setResponse(Payload response) {
         this.response = response;
         expirationScheduler.shutdown(); // Cancel timer upon receiving response
     }

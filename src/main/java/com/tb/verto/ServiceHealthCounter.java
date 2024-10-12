@@ -1,15 +1,14 @@
 package com.tb.verto;
 
-import com.tb.common.eventDriven.EventListener;
-import com.tb.common.eventDriven.ExpirableEvent;
-import com.tb.common.eventDriven.ServiceStatus;
-import com.tb.common.eventDriven.ServiceStatusListener;
+import com.tb.common.Communicator.ServicePingParams;
+import com.tb.common.eventDriven.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServiceHealthMonitor implements EventListener {
+public class ServiceHealthCounter implements EventListener {
+    private EventStore eventStore;
     private ServiceStatus serviceStatus;
     private LocalDateTime lastStatusChangedOn;
     private final int consecutiveExpireCountForServiceDown;
@@ -17,11 +16,22 @@ public class ServiceHealthMonitor implements EventListener {
     private int consecutiveExpiryCount = 0;
     private int consecutiveResponseCount = 0;
     private final List<ServiceStatusListener> listeners = new ArrayList<>();
-    public ServiceHealthMonitor(int consecutiveExpireCountForServiceDown, int consecutiveResponseCountForServiceUp) {
-        this.consecutiveExpireCountForServiceDown = consecutiveExpireCountForServiceDown;
-        this.consecutiveResponseCountForServiceUp = consecutiveResponseCountForServiceUp;
+    public ServiceHealthCounter(ServicePingParams pingParams, List<ServiceStatusListener> listeners){
+        this.consecutiveExpireCountForServiceDown = pingParams.consecutiveExpireCountForServiceDown;
+        this.consecutiveResponseCountForServiceUp = pingParams.consecutiveResponseCountForServiceUp;
+        this.eventStore = new EventStore(pingParams.maxEventToStoreForHealthCount,
+                pingParams.throwOnDuplicateEvent);
+        for (ServiceStatusListener listener : listeners) {
+            this.listeners.add(listener);
+        }
         this.serviceStatus = ServiceStatus.DOWN;  // Assume service starts in "up" state
         this.lastStatusChangedOn=LocalDateTime.now();
+    }
+    public void addListener(ServiceStatusListener listener) {
+        listeners.add(listener);
+    }
+    public void removeListener(ServiceStatusListener listener) {
+        listeners.remove(listener);
     }
     @Override
     public void onResponseReceived(ExpirableEvent event) {
@@ -33,7 +43,8 @@ public class ServiceHealthMonitor implements EventListener {
         consecutiveExpiryCount = 0;  // Reset expiry count when a response is received
 
         if (consecutiveResponseCount >= consecutiveResponseCountForServiceUp) {
-            markServiceUp();  // Mark the service as "up"
+            updateServiceStatus(ServiceStatus.UP);
+            notifyListeners(ServiceStatus.UP);
         }
     }
     @Override
@@ -46,35 +57,29 @@ public class ServiceHealthMonitor implements EventListener {
         consecutiveResponseCount = 0;  // Reset response count on expiration
 
         if (consecutiveExpiryCount >= consecutiveExpireCountForServiceDown) {
-            markServiceDown();  // Mark the service as "down"
+            updateServiceStatus(ServiceStatus.DOWN);
+            notifyListeners(ServiceStatus.DOWN);
         }
     }
 
-    private void markServiceUp() {
-        if (serviceStatus != ServiceStatus.UP) {
-            serviceStatus = ServiceStatus.UP;
-            consecutiveResponseCount = 0;  // Reset consecutive response count
-            notifyListeners(ServiceStatus.UP);  // Notify listeners about service status change to "up"
+    private void updateServiceStatus(ServiceStatus newStatus) {
+        if (serviceStatus != newStatus) {
+            serviceStatus = newStatus;
+
+            if (newStatus == ServiceStatus.UP) {
+                consecutiveResponseCount = 0;  // Reset consecutive response count
+            } else if (newStatus == ServiceStatus.DOWN) {
+                consecutiveExpiryCount = 0;  // Reset consecutive expiry count
+            }
+
         }
     }
-    private void markServiceDown() {
-        if (serviceStatus != ServiceStatus.DOWN) {
-            serviceStatus = ServiceStatus.DOWN;
-            consecutiveExpiryCount = 0;  // Reset consecutive expiry count
-            notifyListeners(ServiceStatus.DOWN);  // Notify listeners about service status change to "down"
-        }
-    }
+
     private void notifyListeners(ServiceStatus status) {
         for (ServiceStatusListener listener : listeners) {
             listener.onServiceStatusChange(status);
         }
     }
-    public void addListener(ServiceStatusListener listener) {
-        listeners.add(listener);
-    }
 
-    public void removeListener(ServiceStatusListener listener) {
-        listeners.remove(listener);
-    }
 }
 
