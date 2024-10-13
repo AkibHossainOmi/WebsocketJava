@@ -1,8 +1,4 @@
-package com.tb.common.Communicator;
-
-import com.tb.WebSocketWrapper;
-import com.tb.common.Communicator.InternalSocket.Transport;
-import com.tb.common.eventDriven.ExpirableEvent;
+package com.tb.common.eventDriven;
 
 public interface Connector {
     void onMessage(Payload data);
@@ -12,6 +8,9 @@ public interface Connector {
     Payload createServicePingMsg();
     Payload createKeepAliveMsg();
     Transport getTransport();
-    ExpirableEvent createRequestFromPayload(Payload payload);
+    Expirable createRequestFromPayload(Payload payload);
+    void onServiceStatusChange(ServiceStatus status); // "up" or "down"
+    void connect();
+    String getSessionId();
 }
 

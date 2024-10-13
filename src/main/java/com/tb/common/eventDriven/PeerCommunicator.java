@@ -1,4 +1,4 @@
-package com.tb.common.Communicator;
+package com.tb.common.eventDriven;
 
 public interface PeerCommunicator<TRecvData, TSentData> {
     void sendData(TRecvData Data);

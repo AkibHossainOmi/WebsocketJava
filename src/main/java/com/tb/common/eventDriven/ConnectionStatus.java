@@ -1,4 +1,4 @@
-package com.tb.common.Communicator;
+package com.tb.common.eventDriven;
 
 public enum ConnectionStatus {
     open,

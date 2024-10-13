@@ -1,7 +1,5 @@
 package com.tb.common.eventDriven;
 
-import com.tb.common.Communicator.Payload;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +8,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ExpirableEvent implements Event {
+public class Expirable implements Event {
     @Override
     public String getId() {
         return id;
@@ -22,9 +20,9 @@ public class ExpirableEvent implements Event {
     private final LocalDateTime eventTime; // Time when the event was created
     private final LocalDateTime expiredOn; // Expiration time
     private final AtomicBoolean expired = new AtomicBoolean(false); // Flag to indicate if the event is expired
-    private final List<EventListener> listeners = new ArrayList<>(); // List of listeners
+    private final List<RequestStatusListener> listeners = new ArrayList<>(); // List of listeners
     private final ScheduledExecutorService expirationScheduler;
-    public ExpirableEvent(String id,int expirationInSeconds, Payload request) {
+    public Expirable(String id, int expirationInSeconds, Payload request) {
         this.id=id;
         this.eventTime = LocalDateTime.now();
         this.request=request;
@@ -32,8 +30,8 @@ public class ExpirableEvent implements Event {
         this.listeners.addAll(listeners);
         this.expirationScheduler = Executors.newSingleThreadScheduledExecutor();
         expirationScheduler.schedule(() -> {
-            expired.set(true);
-            notifyEventExpiry(); // Notify all listeners that the event has expired
+            this.expired.set(true);
+            this.notifyEventExpiry(); // Notify all listeners that the event has expired
         }, expirationInSeconds, TimeUnit.SECONDS);
     }
     public void setResponse(Payload response) {
@@ -52,10 +50,10 @@ public class ExpirableEvent implements Event {
     public boolean isExpired() {
         return expired.get() || LocalDateTime.now().isAfter(expiredOn);
     }
-    public void addListener(EventListener listener) {
+    public void addListener(RequestStatusListener listener) {
         listeners.add(listener);
     }
-    public void removeListener(EventListener listener) {
+    public void removeListener(RequestStatusListener listener) {
         listeners.remove(listener);
     }
     public void cleanup() {
@@ -70,12 +68,12 @@ public class ExpirableEvent implements Event {
         }
     }
     private void notifyEventExpiry() {
-        for (EventListener listener : listeners) {
+        for (RequestStatusListener listener : listeners) {
             listener.onEventExpired(this);
         }
     }
     private void notifyResponseReceived() {
-        for (EventListener listener : listeners) {
+        for (RequestStatusListener listener : listeners) {
             listener.onResponseReceived(this);
         }
     }

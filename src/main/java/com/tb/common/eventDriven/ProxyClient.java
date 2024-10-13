@@ -1,5 +1,4 @@
 package com.tb.common.eventDriven;
-import com.tb.common.Communicator.ConnectionStatus;
 
 public interface ProxyClient<TOpenData, TCloseData,TOnMsgData, TSentData, TOnErrorData, TOnStatusData>
 {

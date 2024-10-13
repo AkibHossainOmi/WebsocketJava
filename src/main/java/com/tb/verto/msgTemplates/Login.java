@@ -2,7 +2,8 @@ package com.tb.verto.msgTemplates;
 
 public class Login {
     int id = 0;
-    public static String createMessage(  String login, String password,String socketUrl,String sessionId,int id) {
+    public static String createMessage(String login, String password,String socketUrl,
+                                       String sessionId,int id) {
         return """
                 {
                      "jsonrpc": "2.0",

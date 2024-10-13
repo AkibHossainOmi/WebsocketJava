@@ -1,16 +1,16 @@
 package com.tb.common.eventDriven;
 
-import com.tb.common.Communicator.Connector;
-import com.tb.common.Communicator.Payload;
-import com.tb.common.Communicator.ServiceKeepAliveParams;
-import com.tb.common.Communicator.ServicePingParams;
-import com.tb.common.Communicator.InternalSocket.Transport;
 import com.tb.verto.ServiceHealthCounter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class ServiceHealthTracker {
+
+
     enum PingOrKeepAlive {PING, KEEP_ALIVE}
     private final ScheduledExecutorService keepAliveScheduler = Executors.newSingleThreadScheduledExecutor();
     private final ScheduledExecutorService servicePingScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -21,13 +21,15 @@ public class ServiceHealthTracker {
     private Connector connector;
     ServiceHealthCounter healthCounter;
 
-    public ServiceHealthTracker(Transport transport, ServicePingParams pingParams,
+    public ServiceHealthTracker(ServicePingParams pingParams,
                                 ServiceKeepAliveParams keepAliveParams,
                                 Connector connector) {
         this.pingParams = pingParams;
         this.keepAliveParams=keepAliveParams;
         this.connector=connector;
-        this.healthCounter = new ServiceHealthCounter(pingParams);
+        List<Connector> privateServiceStatusListeners=
+                new ArrayList<>(Arrays.asList(connector));
+        this.healthCounter = new ServiceHealthCounter(pingParams,privateServiceStatusListeners);
     }
     public void startServicePingMonitor() {
         if (this.pingParams==null){
@@ -48,15 +50,15 @@ public class ServiceHealthTracker {
             if (pingRunning) return;
             servicePingScheduler.scheduleAtFixedRate(() -> {
                 Payload payload= connector.createServicePingMsg();
-                ExpirableEvent requestToTrack= connector.createRequestFromPayload(payload);
-                this.eventStore.add(requestToTrack);
-                this.connector.getTransport().sendMessage(request);
+                Expirable requestToTrack= connector.createRequestFromPayload(payload);
+                //this.eventStore.add(requestToTrack);
+                //this.connector.getTransport().sendMessage(request);
             }, this.pingParams.initialDelay, pingParams.period, pingParams.timeUnit);
         } else {
             if (keepAliveRunning) return;
             keepAliveScheduler.scheduleAtFixedRate(() -> {
-                T request = connector.createKeepAliveMsg();
-                this.connector.getTransport().sendMessage(request);
+                //T request = connector.createKeepAliveMsg();
+                //this.connector.getTransport().sendMessage(request);
             }, keepAliveParams.initialDelay, keepAliveParams.period, keepAliveParams.timeUnit);
         }
     }
@@ -84,10 +86,11 @@ public class ServiceHealthTracker {
             keepAliveRunning = false;
         }
     }
-    public void sendAdhocServicePing(ExpirableEvent request){
-        this.connector.getTransport().sendMessage(request);
+    public void sendAdhocServicePing(Expirable request){
+
+        //this.connector.getTransport().sendMessage(request);
     }
-    public void sendAdhocKeepAlive(ExpirableEvent request){
-        this.connector.getTransport().sendMessage(request);
+    public void sendAdhocKeepAlive(Expirable request){
+        //this.connector.getTransport().sendMessage(request);
     }
 }

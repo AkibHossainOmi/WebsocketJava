@@ -1,26 +1,28 @@
 package com.tb.verto;
 
-import com.tb.WebSocketWrapper;
-import com.tb.common.Communicator.Connector;
-import com.tb.common.Communicator.InternalSocket.Transport;
-import com.tb.common.Communicator.InternalSocket.TransportListener;
-import com.tb.common.Communicator.Payload;
-import com.tb.common.eventDriven.ExpirableEvent;
+import com.tb.WebSocketProxy;
+import com.tb.common.eventDriven.Connector;
+import com.tb.common.eventDriven.Transport;
+import com.tb.common.eventDriven.TransportListener;
+import com.tb.common.eventDriven.Payload;
+import com.tb.common.eventDriven.Expirable;
 import com.tb.common.eventDriven.ServiceHealthTracker;
+import com.tb.common.eventDriven.ServiceStatus;
 import com.tb.common.eventDriven.UniqueIntGenerator;
 import com.tb.verto.msgTemplates.*;
-import jdk.jshell.spi.ExecutionControl;
 
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-class VertoConnector implements Connector{
+public class VertoConnector implements Connector{
     //Transport webSocket;
     VertoConnectParams params;
     ServiceHealthTracker serviceHealthTracker;
-    WebSocketWrapper transport;
-    TransportListener<String> transportListener;
+    WebSocketProxy transport;
+    TransportListener transportListener;
     UniqueIntGenerator intGenerator= new UniqueIntGenerator(0);
+    String vertoWebSocketSessionId;
 
     public int getPingExpiresInSec() {
         return pingExpiresInSec;
@@ -29,70 +31,78 @@ class VertoConnector implements Connector{
     public void setPingExpiresInSec(int pingExpiresInSec) {
         this.pingExpiresInSec = pingExpiresInSec;
     }
-
     int pingExpiresInSec=2;
     public VertoConnector(VertoConnectParams params) {
         this.params=params;
-        Random random = new Random();
-        this.transport = new WebSocketWrapper(params.getWebSocketSettings());
         this.transportListener = createTransportListener(this);
-        this.transport.addListener(this.transportListener);
-        this.serviceHealthTracker =
-                new ServiceHealthTracker<String>(this.transport,params.servicePingParams,
+        /*this.serviceHealthTracker =
+                new ServiceHealthTracker(this.transport,params.servicePingParams,
                 null,this);
-        serviceHealthTracker.startServicePingMonitor();
-        login();
-        //ping();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        sendCall();
-        //this.serviceHealthMonitor = new ServiceHealthMonitor(web params.servicePingParams);
-        sendHangup();
-        //this.pingFactory= new VertoPingUtil();
+        serviceHealthTracker.startServicePingMonitor();*/
 
+        //sendCall();
+        //this.serviceHealthMonitor = new ServiceHealthMonitor(web params.servicePingParams);
+        //sendHangup();
+        //this.pingFactory= new VertoPingUtil();
+    }
+    @Override
+    public void connect() {
+        List<TransportListener>tl = new ArrayList<>();
+        tl.add(this.transportListener);
+        this.transport = new WebSocketProxy(params.webSocketSettings, tl);
+        this.vertoWebSocketSessionId = UUID.randomUUID().toString();
+        this.transport.connect(this.transport);
     }
 
-    private TransportListener createTransportListener(VertoConnector self) {
-        return new TransportListener<String>() {
+    @Override
+    public String getSessionId() {
+        return this.vertoWebSocketSessionId;
+    }
+
+    private TransportListener createTransportListener(VertoConnector mySelf) {
+        return new TransportListener() {
             @Override
-            public void onTransportOpen(String data) {
+            public void onTransportOpen(Payload data) {
 
             }
 
             @Override
-            public void onTransportClose(String data) {
+            public void onTransportClose(Payload data) {
 
             }
 
             @Override
-            public void onTransportMessage(String data) {
-                self.onMessage(new Payload(data));
+            public void onTransportMessage(Payload data) {
+                mySelf.onMessage(data);
             }
 
             @Override
-            public void onTransportError(String data) {
+            public void onTransportError(Payload data) {
 
             }
 
             @Override
-            public void onTransportStatus(String data) {
+            public void onTransportStatus(Payload data) {
 
             }
         };
     }
 
-    private void login() {
-        sessionId = UUID.randomUUID().toString();
+    public void login() {
         String data =
                 Login.createMessage(params.login, params.password,
                         params.webSocketSettings.getUri(),
-                        sessionId,new Random().nextInt());
-        transport.sendMessage(data);
+                        vertoWebSocketSessionId,this.intGenerator.getNext());
+        System.out.println(data);
+        transport.sendMessage(new Payload(data));
     }
-    private void sendCall() {
+    public void ping() {
+        String data =
+                Ping.createMessage(intGenerator.getNext());
+        System.out.println(data);
+        transport.sendMessage(new Payload(data));
+    }
+   /* private void sendCall() {
         callId = UUID.randomUUID().toString();
         String data =OutboundCall.createMessage(params.login,callId,sessionId,1);
         transport.sendMessage(data);
@@ -102,7 +112,7 @@ class VertoConnector implements Connector{
         String data =Hangup2.createMessage(callId,564);
         System.out.println(data);
         transport.sendMessage(data);
-    }
+    }*/
     @Override
     public Payload createServicePingMsg() {
         return new Payload(Ping.createMessage(intGenerator.getNext()));
@@ -118,19 +128,26 @@ class VertoConnector implements Connector{
     }
 
     @Override
-    public ExpirableEvent createRequestFromPayload(Payload payload) {
-        return new ExpirableEvent(intGenerator.getNext().toString(),
+    public Expirable createRequestFromPayload(Payload payload) {
+        return new Expirable(intGenerator.getNext().toString(),
                 this.pingExpiresInSec,payload);
     }
 
     @Override
-    public void onMessage(Payload data) {
+    public void onServiceStatusChange(ServiceStatus status) {
 
+    }
+
+
+
+    @Override
+    public void onMessage(Payload data) {
+        System.out.println(data.getData());
     }
 
     @Override
     public void sendMessage(Payload data) {
-
+        this.transport.sendMessage(data);
     }
 
     @Override

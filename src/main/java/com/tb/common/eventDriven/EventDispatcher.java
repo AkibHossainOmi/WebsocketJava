@@ -1,31 +1,31 @@
 package com.tb.common.eventDriven;
 
 public class EventDispatcher{
-    EventStore store;
+    RequestStore store;
     Boolean trackResponse;
-    EventListener serviceHealthMonitor;
+    RequestStatusListener serviceHealthMonitor;
     public EventDispatcher(Boolean trackResponse, int maxEventToTrackInStore,
-                           EventListener serviceHealthMonitor) {
+                           RequestStatusListener serviceHealthMonitor) {
         this.trackResponse = trackResponse;
         this.store=trackResponse==true
-                ?new EventStore(maxEventToTrackInStore,false)
+                ?new RequestStore(maxEventToTrackInStore,false)
                 :null;
         this.serviceHealthMonitor = serviceHealthMonitor;
     }
-    public void dispatch(ExpirableEvent event){
+    public void dispatch(Expirable event){
         dispatch(event,this);
     }
-    void dispatch(ExpirableEvent event,EventDispatcher dispatcher){
+    void dispatch(Expirable event, EventDispatcher dispatcher){
         if(this.trackResponse){
-            event.addListener(new EventListener() {
+            event.addListener(new RequestStatusListener() {
                 @Override
-                public void onResponseReceived(ExpirableEvent event) {
+                public void onResponseReceived(Expirable event) {
                     if (dispatcher.serviceHealthMonitor !=null){
                         serviceHealthMonitor.onResponseReceived(event);
                     }
                 }
                 @Override
-                public void onEventExpired(ExpirableEvent event) {
+                public void onEventExpired(Expirable event) {
                     serviceHealthMonitor.onEventExpired(event);
                 }
             });

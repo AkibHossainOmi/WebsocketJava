@@ -1,9 +1,10 @@
 package com.tb;
 
 import com.tb.calling.VertoCall;
-import com.tb.common.Communicator.ServicePingParams;
 import com.tb.common.WebSocketType;
+import com.tb.common.eventDriven.ServicePingParams;
 import com.tb.verto.VertoConnectParams;
+import com.tb.verto.VertoConnector;
 import com.tb.webSocket.WebSocketSettings;
 
 import java.util.Scanner;
@@ -13,17 +14,32 @@ public class Main {
 
     public static void main(String[] args) {
 
-        //ServicePingParams servicePingParams = new ServicePingParams(1,1);
-     /*   VertoConnectParams params= new VertoConnectParams("1001",
+        VertoConnectParams params = new VertoConnectParams("1001",
                 "1234",
-                new WebSocketSettings(WebSocketType.Ws,"ws://192.168.0.31:8081",1000),
-                new ServicePingParams(1,1));
+                new WebSocketSettings(WebSocketType.Ws, "ws://192.168.0.31:8081", 1000),
+                new ServicePingParams());
+        VertoConnector vc = new VertoConnector(params);
+        vc.connect();
+        delay(1000);
+        vc.login();
+        delay(3000);
+        vc.ping();
 
-        VertoProxy verto= new VertoProxy(params);*/
-        VertoCall newCall= new VertoCall(UUID.randomUUID().toString(),"1001","9999");
+        VertoCall newCall= new VertoCall(vc, UUID.randomUUID().toString(),"1001","9999");
+        newCall.startCall();
+        delay(10000);
+        newCall.modifyCall();
 
         // Wait for a keystroke before exiting
         System.out.println("Press Enter to exit...");
         new Scanner(System.in).nextLine();
+    }
+
+    private static void delay(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

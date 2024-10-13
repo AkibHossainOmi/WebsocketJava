@@ -1,7 +1,5 @@
 package com.tb.common.eventDriven;
 
-import com.tb.common.Communicator.ConnectionStatus;
-
 public interface ProxyServer<TOpenData, TCloseData,TOnMsgData, TSentData, TOnErrorData, TOnStatusData>
 {
     void onServerOpen(TOpenData data);

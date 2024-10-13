@@ -2,16 +2,16 @@ package com.tb.common.eventDriven;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Iterator;
 
-public class EventStore {
-    private final ConcurrentHashMap<String, ExpirableEvent> eventTable = new ConcurrentHashMap<>();
+public class RequestStore {
+    private final ConcurrentHashMap<String, Expirable> eventTable = new ConcurrentHashMap<>();
     private final boolean throwIfDuplicateEvent;
     private final int maxEventsToStore;
-    public EventStore(int maxEventsToStore, boolean throwIfDuplicateEvent) {
+    public RequestStore(int maxEventsToStore, boolean throwIfDuplicateEvent) {
         this.throwIfDuplicateEvent = throwIfDuplicateEvent;
         this.maxEventsToStore = maxEventsToStore;
     }
-    public void add(ExpirableEvent event) {
-        String requestId = event.getId();
+    public void add(Expirable request) {
+        String requestId = request.getId();
         if (eventTable.containsKey(requestId)) {
             if (this.throwIfDuplicateEvent) {
                 throw new RuntimeException("Duplicate eventId: " + requestId);
@@ -23,7 +23,7 @@ public class EventStore {
         if (eventTable.size() >= maxEventsToStore) {
             removeOldestEvent();
         }
-        eventTable.put(requestId, event);
+        eventTable.put(requestId, request);
     }
     private void removeOldestEvent() {
         Iterator<String> iterator = eventTable.keys().asIterator();
@@ -33,7 +33,7 @@ public class EventStore {
         }
     }
     // Optional: Add methods for retrieving or checking events
-    public ExpirableEvent getEvent(String requestId) {
+    public Expirable getEvent(String requestId) {
         return eventTable.get(requestId);
     }
     public boolean containsEvent(String requestId) {

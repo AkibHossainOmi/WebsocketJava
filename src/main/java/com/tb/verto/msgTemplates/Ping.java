@@ -6,8 +6,8 @@ public class Ping {
             {
                 "id": %d,
                 "jsonrpc": "2.0",
-                "method": "verto.ping",
+                "method": "verto.ping"
             }
-            """.formatted(id); // Using String#formatted to inject the serial number
+            """.formatted(id,id); // Using String#formatted to inject the serial number
     }
 }

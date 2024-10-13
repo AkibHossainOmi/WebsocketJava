@@ -1,8 +1,16 @@
 package com.tb.calling;
 
 
+import com.tb.common.eventDriven.Connector;
+
 import java.io.IOException;
 public abstract class AbstractPhoneCall implements PhoneCall {
+    Connector connector;
+
+    public void setUniqueId(String uniqueId) {
+        this.uniqueId = uniqueId;
+    }
+
     private String uniqueId;
     private String aParty;
     private String bParty;
@@ -15,7 +23,9 @@ public abstract class AbstractPhoneCall implements PhoneCall {
     public abstract void disconnect();
     public abstract void onRing();
     public abstract void onAnswer();
-    public AbstractPhoneCall(String uniqueId, String aparty, String bparty) {
+    public AbstractPhoneCall(Connector connector,
+            String uniqueId, String aparty, String bparty) {
+        this.connector=connector;
         this.uniqueId = uniqueId;
     }
 
