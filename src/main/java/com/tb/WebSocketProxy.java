@@ -1,4 +1,5 @@
 package com.tb;
+import com.tb.common.ServiceEnum.TransportPacket;
 import com.tb.common.eventDriven.TransportListener;
 import com.tb.common.eventDriven.Transport;
 import com.tb.common.eventDriven.Payload;
@@ -38,7 +39,8 @@ public class WebSocketProxy implements Transport {
                 try {
                     System.out.printf("Websocket Connected");
                     for (TransportListener publicListener : publicListeners) {
-                        publicListener.onTransportOpen(new Payload("Websocket Connected."));
+                        publicListener.onTransportOpen(
+                                new Payload("Websocket Connected.", TransportPacket.TransportUp));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -48,7 +50,7 @@ public class WebSocketProxy implements Transport {
             @Override
             public void onMessage(String data) {
                 for (TransportListener publicListener : publicListeners) {
-                    publicListener.onTransportMessage(new Payload(data.toString()));
+                    publicListener.onTransportMessage(new Payload(data.toString(), TransportPacket.Payload));
                 }
             }
 

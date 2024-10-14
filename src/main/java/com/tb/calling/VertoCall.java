@@ -1,5 +1,6 @@
 package com.tb.calling;
 
+import com.tb.common.ServiceEnum.VertoPacket;
 import com.tb.common.eventDriven.Connector;
 import com.tb.common.eventDriven.Payload;
 import com.tb.verto.msgTemplates.ModifyCall;
@@ -14,12 +15,12 @@ public class VertoCall extends AbstractPhoneCall {
         System.out.println("sending Invite...");
         this.setUniqueId(UUID.randomUUID().toString());
         String data =StartCall.createMessage("1001",this.getUniqueId(),connector.getSessionId(),100);
-        connector.sendMessage(new Payload(data));
+        connector.sendTransportMessage(new Payload(data, VertoPacket.Invite));
     }
     public void modifyCall() {
         System.out.println("Sending Modify...");
         String data = ModifyCall.createMessage("1001",this.getUniqueId(),connector.getSessionId(),120);
-        connector.sendMessage(new Payload(data));
+        connector.sendTransportMessage(new Payload(data, VertoPacket.Modify));
     }
     @Override
     public void onStart(Object message) {

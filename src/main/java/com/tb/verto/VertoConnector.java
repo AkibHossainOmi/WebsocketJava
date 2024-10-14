@@ -1,14 +1,8 @@
 package com.tb.verto;
 
 import com.tb.WebSocketProxy;
-import com.tb.common.eventDriven.Connector;
-import com.tb.common.eventDriven.Transport;
-import com.tb.common.eventDriven.TransportListener;
-import com.tb.common.eventDriven.Payload;
-import com.tb.common.eventDriven.Expirable;
-import com.tb.common.eventDriven.ServiceHealthTracker;
-import com.tb.common.eventDriven.ServiceStatus;
-import com.tb.common.eventDriven.UniqueIntGenerator;
+import com.tb.common.ServiceEnum.VertoPacket;
+import com.tb.common.eventDriven.*;
 import com.tb.verto.msgTemplates.*;
 
 import java.util.ArrayList;
@@ -35,10 +29,9 @@ public class VertoConnector implements Connector{
     public VertoConnector(VertoConnectParams params) {
         this.params=params;
         this.transportListener = createTransportListener(this);
-        /*this.serviceHealthTracker =
-                new ServiceHealthTracker(this.transport,params.servicePingParams,
-                null,this);
-        serviceHealthTracker.startServicePingMonitor();*/
+        this.serviceHealthTracker =
+                new ServiceHealthTracker(params.servicePingParams,null, this);
+        serviceHealthTracker.startServicePingMonitor();
 
         //sendCall();
         //this.serviceHealthMonitor = new ServiceHealthMonitor(web params.servicePingParams);
@@ -59,6 +52,11 @@ public class VertoConnector implements Connector{
         return this.vertoWebSocketSessionId;
     }
 
+    @Override
+    public void onServiceStatusChange(ServiceStatus status) {
+
+    }
+
     private TransportListener createTransportListener(VertoConnector mySelf) {
         return new TransportListener() {
             @Override
@@ -73,7 +71,7 @@ public class VertoConnector implements Connector{
 
             @Override
             public void onTransportMessage(Payload data) {
-                mySelf.onMessage(data);
+
             }
 
             @Override
@@ -94,13 +92,13 @@ public class VertoConnector implements Connector{
                         params.webSocketSettings.getUri(),
                         vertoWebSocketSessionId,this.intGenerator.getNext());
         System.out.println(data);
-        transport.sendMessage(new Payload(data));
+        transport.sendMessage(new Payload(data, VertoPacket.Login));
     }
     public void ping() {
         String data =
                 Ping.createMessage(intGenerator.getNext());
         System.out.println(data);
-        transport.sendMessage(new Payload(data));
+        transport.sendMessage(new Payload(data, VertoPacket.Ping));
     }
    /* private void sendCall() {
         callId = UUID.randomUUID().toString();
@@ -115,7 +113,7 @@ public class VertoConnector implements Connector{
     }*/
     @Override
     public Payload createServicePingMsg() {
-        return new Payload(Ping.createMessage(intGenerator.getNext()));
+        return new Payload(Ping.createMessage(intGenerator.getNext()), VertoPacket.Ping);
     }
     @Override
     public Payload createKeepAliveMsg() {
@@ -132,32 +130,9 @@ public class VertoConnector implements Connector{
         return new Expirable(intGenerator.getNext().toString(),
                 this.pingExpiresInSec,payload);
     }
-
     @Override
-    public void onServiceStatusChange(ServiceStatus status) {
-
-    }
-
-
-
-    @Override
-    public void onMessage(Payload data) {
-        System.out.println(data.getData());
-    }
-
-    @Override
-    public void sendMessage(Payload data) {
+    public void sendTransportMessage(Payload data) {
         this.transport.sendMessage(data);
-    }
-
-    @Override
-    public void onServiceDown(Payload data) {
-
-    }
-
-    @Override
-    public void onServiceUp(Payload data) {
-
     }
 }
 
