@@ -2,13 +2,13 @@ package com.tb.common.eventDriven;
 
 public interface TransportListener {
 
-void onTransportOpen(Payload data);
+void onTransportOpen(Payload payload);
 
-void onTransportClose(Payload data);
+void onTransportClose(Payload payload);
 
-void onTransportMessage(Payload data);
+void onTransportMessage(Payload payload);
 
-void onTransportError(Payload data);
+void onTransportError(Payload payload);
 
-void onTransportStatus(Payload data);
+void onTransportStatus(Payload payload);
 }

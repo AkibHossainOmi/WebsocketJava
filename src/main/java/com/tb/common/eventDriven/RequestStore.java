@@ -1,16 +1,24 @@
 package com.tb.common.eventDriven;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Iterator;
 
 public class RequestStore {
-    private final ConcurrentHashMap<String, Expirable> eventTable = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, RequestResponse> eventTable = new ConcurrentHashMap<>();
     private final boolean throwIfDuplicateEvent;
     private final int maxEventsToStore;
-    public RequestStore(int maxEventsToStore, boolean throwIfDuplicateEvent) {
+    private final List<RequestStatusListener> publicListeners = new ArrayList<>();
+
+    public RequestStore(int maxEventsToStore, boolean throwIfDuplicateEvent,
+                        List<RequestStatusListener> publicListeners) {
         this.throwIfDuplicateEvent = throwIfDuplicateEvent;
         this.maxEventsToStore = maxEventsToStore;
+        for (RequestStatusListener publicListener : publicListeners) {
+            this.publicListeners.add(publicListener);
+        }
     }
-    public void add(Expirable request) {
+    public void add(Payload request) {
         String requestId = request.getId();
         if (eventTable.containsKey(requestId)) {
             if (this.throwIfDuplicateEvent) {
@@ -23,7 +31,16 @@ public class RequestStore {
         if (eventTable.size() >= maxEventsToStore) {
             removeOldestEvent();
         }
-        eventTable.put(requestId, request);
+        eventTable.put(requestId, new RequestResponse(request));
+    }
+    public void addResponse(Payload response){
+        RequestResponse rr = this.eventTable.get(response.getId());
+        if (rr!=null){
+            if(rr.responses.stream().count()==0) rr.addResponse(response);
+            for (RequestStatusListener publicListener : this.publicListeners) {
+                publicListener.onResponseReceived(response);
+            }
+        }
     }
     private void removeOldestEvent() {
         Iterator<String> iterator = eventTable.keys().asIterator();
@@ -33,14 +50,18 @@ public class RequestStore {
         }
     }
     // Optional: Add methods for retrieving or checking events
-    public Expirable getEvent(String requestId) {
-        return eventTable.get(requestId);
+    public Payload getRequestById(String requestId) {
+        RequestResponse rr= eventTable.get(requestId);
+        return rr.request;
     }
     public boolean containsEvent(String requestId) {
         return eventTable.containsKey(requestId);
     }
     public int getCurrentEventCount() {
         return eventTable.size();
+    }
+    public void addEventStatusListener(RequestStatusListener listener){
+        this.publicListeners.add(listener);
     }
 }
 

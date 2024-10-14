@@ -1,6 +1,7 @@
 package com.tb.verto;
 
 import com.tb.WebSocketProxy;
+import com.tb.common.ServiceEnum.TransportPacket;
 import com.tb.common.ServiceEnum.VertoPacket;
 import com.tb.common.eventDriven.*;
 import com.tb.verto.msgTemplates.*;
@@ -12,6 +13,11 @@ import java.util.UUID;
 public class VertoConnector implements Connector{
     //Transport webSocket;
     VertoConnectParams params;
+
+    public ServiceHealthTracker getServiceHealthTracker() {
+        return serviceHealthTracker;
+    }
+
     ServiceHealthTracker serviceHealthTracker;
     WebSocketProxy transport;
     TransportListener transportListener;
@@ -60,27 +66,30 @@ public class VertoConnector implements Connector{
     private TransportListener createTransportListener(VertoConnector mySelf) {
         return new TransportListener() {
             @Override
-            public void onTransportOpen(Payload data) {
+            public void onTransportOpen(Payload payload) {
 
             }
 
             @Override
-            public void onTransportClose(Payload data) {
+            public void onTransportClose(Payload payload) {
+            }
+
+            @Override
+            public void onTransportMessage(Payload payload) {
+                if (payload.getPayloadType()== TransportPacket.Payload){
+                    if (payload.getData().contains("verto.ping")){
+                        mySelf.getServiceHealthTracker().notify();
+                    }
+                }
+            }
+
+            @Override
+            public void onTransportError(Payload payload) {
 
             }
 
             @Override
-            public void onTransportMessage(Payload data) {
-
-            }
-
-            @Override
-            public void onTransportError(Payload data) {
-
-            }
-
-            @Override
-            public void onTransportStatus(Payload data) {
+            public void onTransportStatus(Payload payload) {
 
             }
         };
@@ -126,13 +135,13 @@ public class VertoConnector implements Connector{
     }
 
     @Override
-    public Expirable createRequestFromPayload(Payload payload) {
-        return new Expirable(intGenerator.getNext().toString(),
+    public ExpirableRequest createRequestFromPayload(Payload payload) {
+        return new ExpirableRequest(intGenerator.getNext().toString(),
                 this.pingExpiresInSec,payload);
     }
     @Override
-    public void sendTransportMessage(Payload data) {
-        this.transport.sendMessage(data);
+    public void sendTransportMessage(Payload payload) {
+        this.transport.sendMessage(payload);
     }
 }
 

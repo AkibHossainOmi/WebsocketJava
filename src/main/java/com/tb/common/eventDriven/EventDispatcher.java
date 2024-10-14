@@ -12,20 +12,20 @@ public class EventDispatcher{
                 :null;
         this.serviceHealthMonitor = serviceHealthMonitor;
     }
-    public void dispatch(Expirable event){
+    public void dispatch(ExpirableRequest event){
         dispatch(event,this);
     }
-    void dispatch(Expirable event, EventDispatcher dispatcher){
+    void dispatch(ExpirableRequest event, EventDispatcher dispatcher){
         if(this.trackResponse){
             event.addListener(new RequestStatusListener() {
                 @Override
-                public void onResponseReceived(Expirable event) {
+                public void onResponseReceived(ExpirableRequest event) {
                     if (dispatcher.serviceHealthMonitor !=null){
                         serviceHealthMonitor.onResponseReceived(event);
                     }
                 }
                 @Override
-                public void onEventExpired(Expirable event) {
+                public void onEventExpired(ExpirableRequest event) {
                     serviceHealthMonitor.onEventExpired(event);
                 }
             });

@@ -6,6 +6,7 @@ import com.tb.common.eventDriven.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ServiceHealthCounter implements RequestStatusListener {
@@ -21,8 +22,7 @@ public class ServiceHealthCounter implements RequestStatusListener {
     public ServiceHealthCounter(ServicePingParams pingParams, List<Connector> publicListeners){
         this.consecutiveExpireCountForServiceDown = pingParams.consecutiveExpireCountForServiceDown;
         this.consecutiveResponseCountForServiceUp = pingParams.consecutiveResponseCountForServiceUp;
-        this.requestStore = new RequestStore(pingParams.maxEventToStoreForHealthCount,
-                pingParams.throwOnDuplicateEvent);
+
         for (Connector publicListener : publicListeners) {
             this.publicListeners.add(publicListener);
         }
@@ -30,15 +30,18 @@ public class ServiceHealthCounter implements RequestStatusListener {
         this.lastStatusChangedOn=LocalDateTime.now();
         this.requestStatusListener= new RequestStatusListener() {
             @Override
-            public void onResponseReceived(Expirable event) {
-                this.onResponseReceived(event);
+            public void onResponseReceived(Payload payload) {
+
             }
 
             @Override
-            public void onEventExpired(Expirable event) {
-                this.onEventExpired(event);
+            public void onEventExpired(Payload payload) {
+
             }
         };
+        this.requestStore = new RequestStore(pingParams.maxEventToStoreForHealthCount,
+                pingParams.throwOnDuplicateEvent,
+                new ArrayList<>(Arrays.asList(requestStatusListener)));
     }
     public void addListener(Connector publicListener) {
         publicListeners.add(publicListener);
@@ -47,7 +50,7 @@ public class ServiceHealthCounter implements RequestStatusListener {
         publicListeners.remove(publicListener);
     }
     @Override
-    public void onResponseReceived(Expirable event) {
+    public void onResponseReceived(Payload event) {
         if (serviceStatus == ServiceStatus.UP) {
             // If service is already up, ignore responses
             return;
@@ -61,7 +64,7 @@ public class ServiceHealthCounter implements RequestStatusListener {
         }
     }
     @Override
-    public void onEventExpired(Expirable event) {
+    public void onEventExpired(Payload event) {
         if (serviceStatus == ServiceStatus.DOWN) {
             // If service is already down, ignore expirations
             return;
@@ -89,8 +92,11 @@ public class ServiceHealthCounter implements RequestStatusListener {
             publicListener.onServiceStatusChange(status);
         }
     }
-    public void addRequest(Expirable request){
+    public void addRequest(Payload request){
         this.requestStore.add(request);
+    }
+    public void addResponse(Payload response){
+        this.requestStore.add(response);
     }
 }
 

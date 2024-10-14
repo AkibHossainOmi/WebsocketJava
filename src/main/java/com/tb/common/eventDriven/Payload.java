@@ -2,19 +2,35 @@ package com.tb.common.eventDriven;
 
 import com.tb.common.ServiceEnum.PayloadType;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 
 public class Payload {
+    public String getId() {
+        return id;
+    }
+
+    String id;
     public PayloadType getPayloadType() {
         return payloadType;
     }
 
     PayloadType payloadType;
-    private String data; // Main payload data
+    private String data; // Main Payload payload
     private HashMap<String, String> headers; // Additional protocol-specific headers
     private HashMap<String, Object> metadata; // Any extra metadata that might be needed
 
-    public Payload(String data, PayloadType payloadType) {
+    public LocalDateTime getTime() {
+        return time;
+    }
+
+    public void setTime(LocalDateTime time) {
+        this.time = time;
+    }
+
+    LocalDateTime time;
+    public Payload(String id,String data, PayloadType payloadType) {
+        this.id=id;
         this.payloadType=payloadType;
         this.data = data;
         this.headers = new HashMap<>();
