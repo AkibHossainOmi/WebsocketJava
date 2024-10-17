@@ -3,9 +3,9 @@ package com.tb;
 import com.tb.calling.VertoCall;
 import com.tb.common.WebSocketType;
 import com.tb.common.eventDriven.ServicePingParams;
-import com.tb.verto.VertoConnectParams;
-import com.tb.verto.VertoConnector;
-import com.tb.webSocket.WebSocketSettings;
+import com.tb.calling.verto.VertoConnectParams;
+import com.tb.calling.verto.VertoConnector;
+import com.tb.transport.websocket.WebSocketSettings;
 
 import java.util.Scanner;
 import java.util.UUID;

@@ -1,4 +1,4 @@
-package com.tb.verto.msgTemplates;
+package com.tb.calling.verto.msgTemplates;
 
 public class Ping {
     public static String createMessage(int id) {

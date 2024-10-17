@@ -1,14 +1,12 @@
-package com.tb.verto.msgTemplates;
+package com.tb.calling.verto.msgTemplates;
 
-public class Hold {
-    public static String createMessage(String login,String destinationNumber, String callerIdName, String callerIdNumber,String callId, String remoteCallerIdNumber,String sessionId,int id) {
+public class Hangup2 {
+    public static String createMessage(String callId,int id) {
         return """
                 {
                     "jsonrpc": "2.0",
-                    "method": "verto.modify",
+                    "method": "verto.bye",
                     "params": {
-                        "action": "hold",
-                        "params": {},
                         "dialogParams": {
                             "useVideo": false,
                             "useStereo": false,
@@ -18,15 +16,15 @@ public class Hold {
                             "useSpeak": "any",
                             "tag": "webcam",
                             "localTag": null,
-                            "login": "%s",
+                            "login": "",
                             "videoParams": {
-                                "minWidth": "1280",
-                                "minHeight": "720",
+                                "minWidth": "",
+                                "minHeight": "",
                                 "minFrameRate": 15
                             },
-                            "destination_number": "%s",
-                            "caller_id_name": "%s",
-                            "caller_id_number": "%s",
+                            "destination_number": "",
+                            "caller_id_name": "",
+                            "caller_id_number": "",
                             "videoBandwidth": {
                                 "max": 2048,
                                 "min": 1024,
@@ -38,17 +36,17 @@ public class Hold {
                                 "useCamera": "any"
                             },
                             "userVariables": {
-                                "answer_path": "/tmp/answer.wav",
-                                "media_path": "/tmp/media.wav"
+                                "answer_path": "",
+                                "media_path": ""
                             },
                             "callID": "%s",
-                            "remote_caller_id_name": "Outbound Call",
-                            "remote_caller_id_number": "%s"
+                            "remote_caller_id_name": "",
+                            "remote_caller_id_number": ""
                         },
-                        "sessid": "%s"
+                        "sessid": ""
                     },
                     "id": %d
                 }
-            """.formatted(login,destinationNumber,callerIdName, callerIdNumber,callId,remoteCallerIdNumber,sessionId,id);
+            """.formatted(callId,id); // Using String#formatted to inject the serial number
     }
 }

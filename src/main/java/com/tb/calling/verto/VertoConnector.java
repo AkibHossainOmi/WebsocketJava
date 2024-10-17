@@ -1,6 +1,8 @@
-package com.tb.verto;
+package com.tb.calling.verto;
 
-import com.tb.WebSocketProxy;
+import com.tb.transport.websocket.WebSocketProxy;
+import com.tb.calling.verto.msgTemplates.Login;
+import com.tb.calling.verto.msgTemplates.Ping;
 import com.tb.common.ServiceEnum.TransportPacket;
 import com.tb.common.ServiceEnum.VertoPacket;
 import com.tb.common.eventDriven.*;

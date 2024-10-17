@@ -1,4 +1,4 @@
-package com.tb.webSocket;
+package com.tb.transport.websocket;
 
 import java.net.http.WebSocket;
 

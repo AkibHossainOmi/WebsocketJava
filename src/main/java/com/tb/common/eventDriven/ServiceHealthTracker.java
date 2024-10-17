@@ -1,6 +1,6 @@
 package com.tb.common.eventDriven;
 
-import com.tb.verto.ServiceHealthCounter;
+import com.tb.calling.verto.ServiceHealthCounter;
 
 import java.util.ArrayList;
 import java.util.Arrays;

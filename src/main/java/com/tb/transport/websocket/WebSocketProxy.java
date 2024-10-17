@@ -1,4 +1,4 @@
-package com.tb;
+package com.tb.transport.websocket;
 import com.tb.common.ServiceEnum.TransportPacket;
 import com.tb.common.eventDriven.TransportListener;
 import com.tb.common.eventDriven.Transport;
@@ -9,7 +9,6 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
-import java.net.http.WebSocket;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

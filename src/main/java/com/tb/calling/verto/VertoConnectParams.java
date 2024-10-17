@@ -1,7 +1,7 @@
-package com.tb.verto;
+package com.tb.calling.verto;
 
 import com.tb.common.eventDriven.ServicePingParams;
-import com.tb.webSocket.WebSocketSettings;
+import com.tb.transport.websocket.WebSocketSettings;
 
 public class VertoConnectParams {
     String login;

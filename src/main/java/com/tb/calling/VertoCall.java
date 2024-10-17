@@ -3,8 +3,8 @@ package com.tb.calling;
 import com.tb.common.ServiceEnum.VertoPacket;
 import com.tb.common.eventDriven.Connector;
 import com.tb.common.eventDriven.Payload;
-import com.tb.verto.msgTemplates.ModifyCall;
-import com.tb.verto.msgTemplates.StartCall;
+import com.tb.calling.verto.msgTemplates.ModifyCall;
+import com.tb.calling.verto.msgTemplates.StartCall;
 
 import java.io.IOException;
 import java.util.UUID;

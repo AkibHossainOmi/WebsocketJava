@@ -1,14 +1,12 @@
-package com.tb.verto.msgTemplates;
+package com.tb.calling.verto.msgTemplates;
 
-public class UnHold {
+public class Hangup {
     public static String createMessage(String login,String destinationNumber, String callerIdName, String callerIdNumber,String callId, String remoteCallerIdNumber,String sessionId,int id) {
         return """
                 {
                     "jsonrpc": "2.0",
-                    "method": "verto.modify",
+                    "method": "verto.bye",
                     "params": {
-                        "action": "unhold",
-                        "params": {},
                         "dialogParams": {
                             "useVideo": false,
                             "useStereo": false,

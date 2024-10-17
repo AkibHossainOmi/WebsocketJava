@@ -1,12 +1,14 @@
-package com.tb.verto.msgTemplates;
+package com.tb.calling.verto.msgTemplates;
 
-public class Hangup {
+public class Hold {
     public static String createMessage(String login,String destinationNumber, String callerIdName, String callerIdNumber,String callId, String remoteCallerIdNumber,String sessionId,int id) {
         return """
                 {
                     "jsonrpc": "2.0",
-                    "method": "verto.bye",
+                    "method": "verto.modify",
                     "params": {
+                        "action": "hold",
+                        "params": {},
                         "dialogParams": {
                             "useVideo": false,
                             "useStereo": false,
@@ -47,6 +49,6 @@ public class Hangup {
                     },
                     "id": %d
                 }
-            """.formatted(login,destinationNumber,callerIdName, callerIdNumber,callId,remoteCallerIdNumber,sessionId,id); // Using String#formatted to inject the serial number
+            """.formatted(login,destinationNumber,callerIdName, callerIdNumber,callId,remoteCallerIdNumber,sessionId,id);
     }
 }
