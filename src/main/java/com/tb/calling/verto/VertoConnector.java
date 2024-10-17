@@ -1,12 +1,12 @@
 package com.tb.calling.verto;
 
+import com.tb.common.ServiceEnum.PayloadType;
 import com.tb.transport.websocket.WebSocketProxy;
 import com.tb.calling.verto.msgTemplates.Login;
 import com.tb.calling.verto.msgTemplates.Ping;
 import com.tb.common.ServiceEnum.TransportPacket;
 import com.tb.common.ServiceEnum.VertoPacket;
 import com.tb.common.eventDriven.*;
-import com.tb.verto.msgTemplates.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,13 +103,14 @@ public class VertoConnector implements Connector{
                         params.webSocketSettings.getUri(),
                         vertoWebSocketSessionId,this.intGenerator.getNext());
         System.out.println(data);
-        transport.sendMessage(new Payload(data, VertoPacket.Login));
+        transport.sendMessage(new Payload(UUID.randomUUID().toString(),
+                data, VertoPacket.Login));
     }
     public void ping() {
         String data =
                 Ping.createMessage(intGenerator.getNext());
         System.out.println(data);
-        transport.sendMessage(new Payload(data, VertoPacket.Ping));
+        transport.sendMessage(new Payload(UUID.randomUUID().toString(), data, VertoPacket.Ping));
     }
    /* private void sendCall() {
         callId = UUID.randomUUID().toString();
@@ -124,7 +125,8 @@ public class VertoConnector implements Connector{
     }*/
     @Override
     public Payload createServicePingMsg() {
-        return new Payload(Ping.createMessage(intGenerator.getNext()), VertoPacket.Ping);
+        return new Payload(intGenerator.getNext().toString(),
+                Ping.createMessage(intGenerator.getNext()), VertoPacket.Ping);
     }
     @Override
     public Payload createKeepAliveMsg() {
@@ -137,9 +139,9 @@ public class VertoConnector implements Connector{
     }
 
     @Override
-    public ExpirableRequest createRequestFromPayload(Payload payload) {
-        return new ExpirableRequest(intGenerator.getNext().toString(),
-                this.pingExpiresInSec,payload);
+    public Payload createRequestFromPayload(Payload payload) {
+        return new Payload(intGenerator.getNext().toString(),payload.getData(),
+                VertoPacket.Ping);
     }
     @Override
     public void sendTransportMessage(Payload payload) {

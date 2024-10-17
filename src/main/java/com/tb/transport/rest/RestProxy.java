@@ -1,90 +1,41 @@
 package com.tb.transport.rest;
 
+import com.tb.common.ServiceEnum.PayloadType;
 import com.tb.common.ServiceEnum.TransportPacket;
 import com.tb.common.eventDriven.TransportListener;
 import com.tb.common.eventDriven.Transport;
 import com.tb.common.eventDriven.Payload;
-import com.tb.transport.websocket.WebSocketSettings;
-import jdk.jshell.spi.ExecutionControl;
+import okhttp3.*;
 import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
 
-import java.net.URI;
-import java.util.HashMap;
+import java.io.IOException;
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class RestProxy implements Transport {
-    protected WebSocketClient webSocketClient;
+    private OkHttpClient client;
+    private StringBuilder baseUrl;
     RestSettings settings;
-    //List<TransportListener> publicListeners =new CopyOnWriteArrayList<>();
-
+    List<TransportListener> publicListeners =new CopyOnWriteArrayList<>();
     public RestProxy(RestSettings settings,
-                          List<TransportListener> publicListeners) {
+                          List<TransportListener> publicListeners,String baseUrl) {
         this.settings=settings;
         /*for (TransportListener publicListener : publicListeners) {
             this.publicListeners.add(publicListener);
         }*/
-        this.webSocketClient= createWebSocketClient(publicListeners);
-    }
-    private WebSocketClient createWebSocketClient(List<TransportListener> publicListeners) {
-        Map<String,String> httpHeaders  = new HashMap<>();
-        //httpHeaders.put("Sec-Websocket-Protocol","janus-protocol");
-        return new WebSocketClient(uri,httpHeaders) {
-            @Override
-            public void onOpen(ServerHandshake handshakedata) {
-                try {
-                    System.out.printf("Websocket Connected");
-                    for (TransportListener publicListener : publicListeners) {
-                        publicListener.onTransportOpen(
-                                new Payload("Websocket Connected.", TransportPacket.TransportUp));
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+        //this.webSocketClient= createWebSocketClient(publicListeners);
 
-            @Override
-            public void onMessage(String data) {
-                for (TransportListener publicListener : publicListeners) {
-                    publicListener.onTransportMessage(new Payload(data.toString(), TransportPacket.Payload));
-                }
-            }
-
-            @Override
-            public void onClose(int code, String reason, boolean remote) {
-                System.out.printf(reason);
-            }
-
-            @Override
-            public void onError(Exception ex) {
-                System.out.printf(ex.toString());
-            }
-        };
     }
     public void connect(Transport transport) {
-        switch (settings.getWebSocketType()) {
-            case Wss -> {
-                createWss();
-            }
-            case Ws -> {
-                this.webSocketClient.connect();
-            }
-        }
+        this.client = new OkHttpClient();
     }
 
-    public WebSocketClient getWebSocket() {
-        return webSocketClient;
+    public OkHttpClient getrestClient() {
+        return this.client;
     }
 
-    private void createWss() {
-        try {
-            throw new ExecutionControl.NotImplementedException("Method createWss not implemented yet.");
-        } catch (ExecutionControl.NotImplementedException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 
     @Override
     public void addListener(TransportListener transportListener) {
@@ -93,7 +44,41 @@ public class RestProxy implements Transport {
 
     @Override
     public void sendMessage(Payload payload) {
-        webSocketClient.send(payload.getData());
+        List<TransportListener> listeners= this.publicListeners;
+        RequestBody body = RequestBody.create(payload.getData(), MediaType.parse("text/xml; charset=utf-8"));
+
+        // Build the HTTP request with the URL, headers, and the XML payload
+        String url= "";
+        if (payload.getUrlSuffix()==null || payload.getUrlSuffix().isEmpty()){
+            url=this.baseUrl.toString();
+        }else{
+            url=this.baseUrl.append("/").append(payload.getUrlSuffix()).toString();
+        }
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Content-Type", "text/xml")
+                .post(body)
+                .build();
+        this.client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                for (TransportListener listener : listeners) {
+                    listener.onTransportError(new Payload(UUID.randomUUID().toString(),
+                            e.getMessage(), TransportPacket.TransportError));
+                }
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                // Check if the response is successful
+                for (TransportListener listener : listeners) {
+                    listener.onTransportMessage(new Payload(UUID.randomUUID().toString(),
+                            response.body().toString(), TransportPacket.Payload));
+                }
+            }
+        });
+
     }
 
 }

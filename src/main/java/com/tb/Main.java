@@ -1,18 +1,25 @@
 package com.tb;
 
-import com.tb.calling.VertoCall;
+import com.tb.calling.VertoCallLeg;
 import com.tb.common.WebSocketType;
 import com.tb.common.eventDriven.ServicePingParams;
 import com.tb.calling.verto.VertoConnectParams;
 import com.tb.calling.verto.VertoConnector;
 import com.tb.transport.websocket.WebSocketSettings;
+import org.jxmpp.stringprep.XmppStringprepException;
+
 
 import java.util.Scanner;
 import java.util.UUID;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws XmppStringprepException {
+        XmppRun xmppRun = new XmppRun();
+        xmppRun.XmppInstance();
+        // Wait for a keystroke before exiting
+        System.out.println("Press Enter to continue...");
+        new Scanner(System.in).nextLine();
 
         VertoConnectParams params = new VertoConnectParams("1001",
                 "1234",
@@ -25,7 +32,7 @@ public class Main {
         delay(3000);
         vc.ping();
 
-        VertoCall newCall= new VertoCall(vc, UUID.randomUUID().toString(),"1001","9999");
+        VertoCallLeg newCall= new VertoCallLeg(vc, UUID.randomUUID().toString(),"1001","9999");
         newCall.startCall();
         delay(10000);
         newCall.modifyCall();
@@ -33,6 +40,7 @@ public class Main {
         // Wait for a keystroke before exiting
         System.out.println("Press Enter to exit...");
         new Scanner(System.in).nextLine();
+
     }
 
     private static void delay(int millis) {

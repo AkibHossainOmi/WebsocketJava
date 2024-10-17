@@ -11,6 +11,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class WebSocketProxy implements Transport {
@@ -38,7 +39,7 @@ public class WebSocketProxy implements Transport {
                     System.out.printf("Websocket Connected");
                     for (TransportListener publicListener : publicListeners) {
                         publicListener.onTransportOpen(
-                                new Payload("Websocket Connected.", TransportPacket.TransportUp));
+                                new Payload(UUID.randomUUID().toString(),"connected", TransportPacket.TransportUp));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -48,7 +49,8 @@ public class WebSocketProxy implements Transport {
             @Override
             public void onMessage(String data) {
                 for (TransportListener publicListener : publicListeners) {
-                    publicListener.onTransportMessage(new Payload(data.toString(), TransportPacket.Payload));
+                    publicListener.onTransportMessage(new Payload(UUID.randomUUID().toString(),
+                            data.toString(), TransportPacket.Payload));
                 }
             }
 

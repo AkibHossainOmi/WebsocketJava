@@ -50,7 +50,7 @@ public class ServiceHealthTracker {
             if (pingRunning) return;
             servicePingScheduler.scheduleAtFixedRate(() -> {
                 Payload payload= connector.createServicePingMsg();
-                ExpirableRequest requestToTrack= connector.createRequestFromPayload(payload);
+                Payload requestToTrack= connector.createRequestFromPayload(payload);
                 //this.eventStore.add(requestToTrack);
                 //this.connector.getTransport().sendMessage(request);
             }, this.pingParams.initialDelay, pingParams.period, pingParams.timeUnit);
@@ -86,11 +86,11 @@ public class ServiceHealthTracker {
             keepAliveRunning = false;
         }
     }
-    public void sendAdhocServicePing(ExpirableRequest request){
+    public void sendAdhocServicePing(Payload request){
 
         //this.connector.getTransport().sendMessage(request);
     }
-    public void sendAdhocKeepAlive(ExpirableRequest request){
+    public void sendAdhocKeepAlive(Payload request){
         //this.connector.getTransport().sendMessage(request);
     }
 }

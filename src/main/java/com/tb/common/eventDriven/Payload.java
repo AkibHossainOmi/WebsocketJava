@@ -9,7 +9,15 @@ public class Payload {
     public String getId() {
         return id;
     }
+    String urlSuffix;
 
+    public String getUrlSuffix() {
+        return urlSuffix;
+    }
+
+    public void setUrlSuffix(String urlSuffix) {
+        this.urlSuffix = urlSuffix;
+    }
     String id;
     public PayloadType getPayloadType() {
         return payloadType;

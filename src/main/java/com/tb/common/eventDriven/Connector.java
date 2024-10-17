@@ -5,7 +5,7 @@ public interface Connector {
     Payload createServicePingMsg();
     Payload createKeepAliveMsg();
     Transport getTransport();
-    ExpirableRequest createRequestFromPayload(Payload payload);
+    Payload createRequestFromPayload(Payload payload);
     void connect();
     String getSessionId();
 

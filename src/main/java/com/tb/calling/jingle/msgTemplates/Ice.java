@@ -24,4 +24,3 @@ public class Ice {
         return xmlPayload;
     }
 }
-
