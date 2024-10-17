@@ -9,10 +9,10 @@ public class Proceed {
     // Reuse the OkHttpClient instance for all requests
     private static final OkHttpClient client = new OkHttpClient();
 
-    public String createMessage(String server_ip,String A_party_with_id,String B_party_with_id, String id) {
+    public String createMessage(String serverIp,String apartyWithId,String bpartyWithId, String id) {
 
             // Define the URL where the REST request will be sent
-            String url = String.format("http://%s:5280/rest", server_ip);
+            String url = String.format("http://%s:5280/rest", serverIp);
 
             // Construct the XML payload
             String xmlPayload = String.format(
@@ -26,7 +26,7 @@ public class Proceed {
                     		<store
                     			xmlns="urn:xmpp:hints"/>
                     </message>
-                    """,B_party_with_id,id,A_party_with_id, id);
+                    """,bpartyWithId,id,apartyWithId, id);
 
             return xmlPayload;
     }

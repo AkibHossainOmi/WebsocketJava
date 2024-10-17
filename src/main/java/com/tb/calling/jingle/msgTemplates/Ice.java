@@ -3,10 +3,10 @@ package com.tb.calling.jingle.msgTemplates;
 import okhttp3.*;
 
 public class Ice {
-    public String createMessage(String server_ip, String A_party_with_id, String B_party_with_id, String id, String device_ip) {
+    public String createMessage(String serverIp, String apartyWithId, String bpartyWithId, String id, String deviceIp) {
 
         // Define the URL where the REST request will be sent
-        String url = String.format("http://%s:5280/rest", server_ip);
+        String url = String.format("http://%s:5280/rest", serverIp);
 
         // Construct the XML payload
         String xmlPayload = String.format(
@@ -20,7 +20,7 @@ public class Ice {
                                 </content>
                             </jingle>
                         </iq>
-                        """, A_party_with_id, B_party_with_id, id, device_ip);
+                        """, apartyWithId, bpartyWithId, id, deviceIp);
         return xmlPayload;
     }
 }
