@@ -3,10 +3,6 @@ package com.tb.calling.jingle.msgTemplates;
 import okhttp3.*;
 
 public class Ice {
-
-    // Reuse the OkHttpClient instance for all requests
-    private static final OkHttpClient client = new OkHttpClient();
-
     public String createMessage(String server_ip, String A_party_with_id, String B_party_with_id, String id, String device_ip) {
 
         // Define the URL where the REST request will be sent
@@ -26,7 +22,6 @@ public class Ice {
                         </iq>
                         """, A_party_with_id, B_party_with_id, id, device_ip);
         return xmlPayload;
-
     }
 }
 
