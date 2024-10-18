@@ -18,7 +18,7 @@ public class XmppRun {
     // Build the XMPP configuration
     public void XmppInstance() throws XmppStringprepException {
         XMPPTCPConnectionConfiguration config = XMPPTCPConnectionConfiguration.builder()
-                .setUsernameAndPassword("test6", "test123")  // Update credentials as needed
+                .setUsernameAndPassword("test101", "test123")  // Update credentials as needed
                 .setXmppDomain("localhost")
                 .setHost("192.168.0.31")  // Replace with your XMPP server IP
                 .setPort(5222)  // Default XMPP port
@@ -46,18 +46,18 @@ public class XmppRun {
                     Message receivedMessage = (Message) stanza;
 //                    receivedMessage = ConstructMessageTest.ringingMessage("of5@telcohost/Conversations.qxbZ", "tx51W3rRMJjXy-Ial-4l5A");
                     System.out.println("Received message: " + receivedMessage.toXML());
-                    String element = determineElement(receivedMessage);
-                    switch (element){
-                        case "propose":
-                            onPropose(connection, receivedMessage);
-                            break;
-                        case "ringing":
-                            onRinging(connection, receivedMessage);
-                            break;
-                        case "accept":
-                            onAccept(connection, receivedMessage);
-                            break;
-                    }
+//                    String element = determineElement(receivedMessage);
+//                    switch (element){
+//                        case "propose":
+//                            onPropose(connection, receivedMessage);
+//                            break;
+//                        case "ringing":
+//                            onRinging(connection, receivedMessage);
+//                            break;
+//                        case "accept":
+//                            onAccept(connection, receivedMessage);
+//                            break;
+//                    }
                 }
             }, stanza -> stanza instanceof Message);
 

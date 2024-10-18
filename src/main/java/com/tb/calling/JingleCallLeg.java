@@ -80,9 +80,30 @@ public class JingleCallLeg extends AbstractCallLeg {
     public String extractSdpIpAndPort(String sdp) {
         return null;
     }
+
+    @Override
+    public void onTransportOpen(Payload payload) {
+
+    }
+
+    @Override
+    public void onTransportClose(Payload payload) {
+
+    }
+
     @Override
     public void onTransportMessage(Payload data) {
         String msg = data.getData();
+    }
+
+    @Override
+    public void onTransportError(Payload payload) {
+
+    }
+
+    @Override
+    public void onTransportStatus(Payload payload) {
+
     }
 
 }

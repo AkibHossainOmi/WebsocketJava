@@ -106,6 +106,16 @@ public class VertoCallLeg extends AbstractCallLeg {
     }
 
     @Override
+    public void onTransportOpen(Payload payload) {
+
+    }
+
+    @Override
+    public void onTransportClose(Payload payload) {
+
+    }
+
+    @Override
     public void onTransportMessage(Payload data) {
         String msg = data.getData();
         switch (getCallMsgType(msg)){
@@ -114,6 +124,16 @@ public class VertoCallLeg extends AbstractCallLeg {
             case ANSWERED -> {}
             case HANGUP -> {}
         }
+
+    }
+
+    @Override
+    public void onTransportError(Payload payload) {
+
+    }
+
+    @Override
+    public void onTransportStatus(Payload payload) {
 
     }
 

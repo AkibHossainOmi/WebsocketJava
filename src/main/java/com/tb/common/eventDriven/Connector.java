@@ -8,7 +8,6 @@ public interface Connector {
     Payload createRequestFromPayload(Payload payload);
     void connect();
     String getSessionId();
-
     void onServiceStatusChange(ServiceStatus status);
 }
 

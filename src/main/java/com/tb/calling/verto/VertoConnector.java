@@ -1,7 +1,6 @@
 package com.tb.calling.verto;
 
-import com.tb.common.ServiceEnum.PayloadType;
-import com.tb.transport.websocket.WebSocketProxy;
+import com.tb.transport.websocket.WebSocketTransport;
 import com.tb.calling.verto.msgTemplates.Login;
 import com.tb.calling.verto.msgTemplates.Ping;
 import com.tb.common.ServiceEnum.TransportPacket;
@@ -11,6 +10,7 @@ import com.tb.common.eventDriven.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class VertoConnector implements Connector{
     //Transport webSocket;
@@ -21,8 +21,13 @@ public class VertoConnector implements Connector{
     }
 
     ServiceHealthTracker serviceHealthTracker;
-    WebSocketProxy transport;
+    WebSocketTransport transport;
     TransportListener transportListener;
+    public List<TransportListener> getPublicListeners() {
+        return publicListeners;
+    }
+
+    List<TransportListener> publicListeners = new CopyOnWriteArrayList<>();
     UniqueIntGenerator intGenerator= new UniqueIntGenerator(0);
     String vertoWebSocketSessionId;
 
@@ -46,11 +51,16 @@ public class VertoConnector implements Connector{
         //sendHangup();
         //this.pingFactory= new VertoPingUtil();
     }
+    public void addListeners(List<TransportListener> publicListeners){
+        for (TransportListener publicListener : publicListeners) {
+            this.publicListeners.add(publicListener);
+        }
+    }
     @Override
     public void connect() {
         List<TransportListener>tl = new ArrayList<>();
         tl.add(this.transportListener);
-        this.transport = new WebSocketProxy(params.webSocketSettings, tl);
+        this.transport = new WebSocketTransport(params.webSocketSettings, tl);
         this.vertoWebSocketSessionId = UUID.randomUUID().toString();
         this.transport.connect(this.transport);
     }
@@ -78,6 +88,11 @@ public class VertoConnector implements Connector{
 
             @Override
             public void onTransportMessage(Payload payload) {
+                if (payload.getPayloadType()== TransportPacket.Payload){
+                    for (TransportListener publicListener : mySelf.getPublicListeners()) {
+                        publicListener.onTransportMessage(payload);
+                    }
+                }
                 if (payload.getPayloadType()== TransportPacket.Payload){
                     if (payload.getData().contains("verto.ping")){
                         mySelf.getServiceHealthTracker().notify();

@@ -3,9 +3,10 @@ package com.tb.calling;
 
 import com.tb.common.eventDriven.Connector;
 import com.tb.common.eventDriven.Payload;
+import com.tb.common.eventDriven.TransportListener;
 
 import java.io.IOException;
-public abstract class AbstractCallLeg implements CallLeg {
+public abstract class AbstractCallLeg implements CallLeg, TransportListener {
     Connector connector;
 
     public String getSdp() {
@@ -37,18 +38,13 @@ public abstract class AbstractCallLeg implements CallLeg {
         this.connector=connector;
         this.uniqueId = uniqueId;
     }
-
     public String getUniqueId() {
         return uniqueId;
     }
-
     public CallBridge getCallBridge() {
         return callBridge;
     }
-
     public void setCallBridge(CallBridge callBridge) {
         this.callBridge = callBridge;
     }
-
-    public abstract void onTransportMessage(Payload data);
 }

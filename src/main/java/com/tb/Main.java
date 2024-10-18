@@ -9,6 +9,7 @@ import com.tb.transport.websocket.WebSocketSettings;
 import org.jxmpp.stringprep.XmppStringprepException;
 
 
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -33,6 +34,7 @@ public class Main {
         vc.ping();
 
         VertoCallLeg newCall= new VertoCallLeg(vc, UUID.randomUUID().toString(),"1001","9999");
+        vc.addListeners(Arrays.asList(newCall));
         newCall.startCall();
         delay(10000);
         newCall.modifyCall();

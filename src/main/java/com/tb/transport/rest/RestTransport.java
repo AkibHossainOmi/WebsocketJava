@@ -1,41 +1,32 @@
 package com.tb.transport.rest;
 
-import com.tb.common.ServiceEnum.PayloadType;
 import com.tb.common.ServiceEnum.TransportPacket;
 import com.tb.common.eventDriven.TransportListener;
 import com.tb.common.eventDriven.Transport;
 import com.tb.common.eventDriven.Payload;
 import okhttp3.*;
-import org.java_websocket.client.WebSocketClient;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class RestProxy implements Transport {
+public class RestTransport implements Transport {
     private OkHttpClient client;
     private StringBuilder baseUrl;
     RestSettings settings;
     List<TransportListener> publicListeners =new CopyOnWriteArrayList<>();
-    public RestProxy(RestSettings settings,
-                          List<TransportListener> publicListeners,String baseUrl) {
+    public RestTransport(RestSettings settings,
+                         List<TransportListener> publicListeners, String baseUrl) {
         this.settings=settings;
-        /*for (TransportListener publicListener : publicListeners) {
+        this.baseUrl= new StringBuilder(baseUrl);
+        for (TransportListener publicListener : publicListeners) {
             this.publicListeners.add(publicListener);
-        }*/
-        //this.webSocketClient= createWebSocketClient(publicListeners);
-
+        }
     }
-    public void connect(Transport transport) {
+    public void init(Transport transport) {
         this.client = new OkHttpClient();
     }
-
-    public OkHttpClient getrestClient() {
-        return this.client;
-    }
-
-
 
     @Override
     public void addListener(TransportListener transportListener) {

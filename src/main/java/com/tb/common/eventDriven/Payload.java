@@ -25,8 +25,8 @@ public class Payload {
 
     PayloadType payloadType;
     private String data; // Main Payload payload
-    private HashMap<String, String> headers; // Additional protocol-specific headers
-    private HashMap<String, Object> metadata; // Any extra metadata that might be needed
+    private HashMap<String, String> headers= new HashMap<>(); // Additional protocol-specific headers
+    private HashMap<String, Object> metadata= new HashMap<>(); // Any extra metadata that might be needed
 
     public LocalDateTime getTime() {
         return time;

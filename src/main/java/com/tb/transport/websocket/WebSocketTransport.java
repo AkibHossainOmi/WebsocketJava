@@ -14,14 +14,14 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class WebSocketProxy implements Transport {
+public class WebSocketTransport implements Transport {
     URI uri;
     protected WebSocketClient webSocketClient;
     WebSocketSettings settings;
     List<TransportListener> publicListeners =new CopyOnWriteArrayList<>();
 
-    public WebSocketProxy(WebSocketSettings settings,
-                          List<TransportListener> publicListeners) {
+    public WebSocketTransport(WebSocketSettings settings,
+                              List<TransportListener> publicListeners) {
         this.settings=settings;
         this.uri = URI.create(settings.getUri());
         for (TransportListener publicListener : publicListeners) {
