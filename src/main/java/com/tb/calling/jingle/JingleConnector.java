@@ -1,17 +1,15 @@
 package com.tb.calling.jingle;
 
-import com.tb.calling.verto.VertoConnector;
 import com.tb.common.ServiceEnum.TransportPacket;
+import com.tb.transport.Transport;
 import com.tb.transport.rest.RestSettings;
 import com.tb.transport.rest.RestTransport;
-import com.tb.transport.websocket.WebSocketTransport;
-import com.tb.calling.verto.msgTemplates.Login;
 import com.tb.calling.verto.msgTemplates.Ping;
 import com.tb.common.ServiceEnum.VertoPacket;
 import com.tb.common.eventDriven.*;
-import com.tb.xmpp.XmppSettings;
-import com.tb.xmpp.JingleTransportType;
-import com.tb.xmpp.XmppTransport;
+import com.tb.transport.xmpp.XmppSettings;
+import com.tb.transport.xmpp.JingleTransportType;
+import com.tb.transport.xmpp.XmppTransport;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -31,7 +29,6 @@ public class JingleConnector implements Connector{
     public List<TransportListener> getPublicListeners() {
         return publicListeners;
     }
-
     List<TransportListener> publicListeners= new CopyOnWriteArrayList<>();
     UniqueIntGenerator intGenerator= new UniqueIntGenerator(0);
     public int getPingExpiresInSec() {
@@ -43,26 +40,31 @@ public class JingleConnector implements Connector{
     int pingExpiresInSec=2;
     public JingleConnector(XmppSettings xmppSettings, RestSettings restSettings) {
         List<TransportListener> xmppListeners= Arrays.asList(privateListener);
-        this.privateListener = createTransportListener(this);
+        this.privateListener = createPrivateXmppListener(this);
         this.xmppSettings=xmppSettings;
+        this.restSettings=restSettings;
         this.xmppTransport= new XmppTransport(xmppSettings,
                 Arrays.asList(this.privateListener));
         this.serviceHealthTracker =
                 new ServiceHealthTracker(xmppSettings.servicePingParams,null, this);
-        serviceHealthTracker.startServicePingMonitor();
-    }
-    public void addListeners(List<TransportListener> publicListeners){
-        for (TransportListener publicListener : publicListeners) {
-            this.publicListeners.add(publicListener);
+        if (xmppSettings.servicePingParams!=null)
+        {
+            serviceHealthTracker.startServicePingMonitor();
         }
     }
     @Override
-    public void connect() {
-        List<TransportListener>tl = new ArrayList<>();
-        tl.add(this.privateListener);
+    public void addListener(TransportListener publicListener){
+            this.publicListeners.add(publicListener);
+    }
+    @Override
+    public void connectOrInit() {
         this.xmppTransport= new XmppTransport(this.xmppSettings,
-                Arrays.asList(this.privateListener));
-        this.xmppTransport.connect();
+                Arrays.asList(this.createPrivateXmppListener(this)));
+        this.xmppTransport.connectOrInit();
+        this.restTransport= new RestTransport(this.restSettings,
+                Arrays.asList(this.createPrivateRestListener(this)),
+                this.restSettings.baseUrl);
+        this.restTransport.connectOrInit();
     }
 
     @Override
@@ -95,17 +97,48 @@ public class JingleConnector implements Connector{
                 VertoPacket.Ping);
     }
     @Override
-    public void sendTransportMessage(Payload payload) {
+    public void sendMsgToTransport(Payload payload) {
         HashMap<String, Object> metadata=payload.getMetadata();
         Boolean useRest= (Boolean) metadata.get("useRest");
         if (useRest){
-            this.xmppTransport.sendMessage(payload);
+            this.restTransport.sendMessage(payload);
         }
         else{
             this.restTransport.sendMessage(payload);
         }
     }
-    private TransportListener createTransportListener(JingleConnector mySelf) {
+    private TransportListener createPrivateXmppListener(JingleConnector mySelf) {
+        return new TransportListener() {
+            @Override
+            public void onTransportOpen(Payload payload) {
+
+            }
+
+            @Override
+            public void onTransportClose(Payload payload) {
+            }
+
+            @Override
+            public void onTransportMessage(Payload payload) {
+                if (payload.getPayloadType()== TransportPacket.Payload){
+                    for (TransportListener publicListener : mySelf.getPublicListeners()) {
+                        publicListener.onTransportMessage(payload);
+                    }
+                }
+            }
+
+            @Override
+            public void onTransportError(Payload payload) {
+
+            }
+
+            @Override
+            public void onTransportStatus(Payload payload) {
+
+            }
+        };
+    }
+    private TransportListener createPrivateRestListener(JingleConnector mySelf) {
         return new TransportListener() {
             @Override
             public void onTransportOpen(Payload payload) {

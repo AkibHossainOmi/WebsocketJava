@@ -7,6 +7,10 @@ import com.tb.common.eventDriven.TransportListener;
 
 import java.io.IOException;
 public abstract class AbstractCallLeg implements CallLeg, TransportListener {
+    public Connector getConnector() {
+        return connector;
+    }
+
     Connector connector;
 
     public String getSdp() {

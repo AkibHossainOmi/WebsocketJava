@@ -1,4 +1,4 @@
-package com.tb.xmpp;
+package com.tb.transport.xmpp;
 
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.util.XmlStringBuilder;

@@ -1,7 +1,7 @@
 package com.tb.transport.websocket;
 import com.tb.common.ServiceEnum.TransportPacket;
 import com.tb.common.eventDriven.TransportListener;
-import com.tb.common.eventDriven.Transport;
+import com.tb.transport.Transport;
 import com.tb.common.eventDriven.Payload;
 import jdk.jshell.spi.ExecutionControl;
 import org.java_websocket.client.WebSocketClient;
@@ -65,7 +65,8 @@ public class WebSocketTransport implements Transport {
             }
         };
     }
-    public void connect(Transport transport) {
+    @Override
+    public void connectOrInit() {
         switch (settings.getWebSocketType()) {
             case Wss -> {
                 createWss();

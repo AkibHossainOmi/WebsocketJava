@@ -1,9 +1,9 @@
-package com.tb.xmpp;
+package com.tb.transport.xmpp;
 
 import com.tb.common.ServiceEnum.TransportPacket;
 import com.tb.common.UUIDGen;
 import com.tb.common.eventDriven.TransportListener;
-import com.tb.common.eventDriven.Transport;
+import com.tb.transport.Transport;
 import com.tb.common.eventDriven.Payload;
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.SmackException;
@@ -28,10 +28,11 @@ public class XmppTransport implements Transport {
     AbstractXMPPConnection connection;
     StanzaListener xmppListener;
     XmppSettings settings;
-    List<TransportListener> publicListeners =new CopyOnWriteArrayList<>();
+    List<TransportListener> publicListeners = new CopyOnWriteArrayList<>();
+
     public XmppTransport(XmppSettings settings,
                          List<TransportListener> publicListeners) {
-        this.settings=settings;
+        this.settings = settings;
         for (TransportListener publicListener : publicListeners) {
             this.publicListeners.add(publicListener);
         }
@@ -48,6 +49,7 @@ public class XmppTransport implements Transport {
         }
         this.xmppListener = createXmppListener(connection);
     }
+
     private StanzaListener createXmppListener(AbstractXMPPConnection connection) {
         return new StanzaListener() {
             @Override
@@ -59,7 +61,9 @@ public class XmppTransport implements Transport {
             }
         };
     }
-    public void connect() {
+
+    @Override
+    public void connectOrInit() {
         this.connection = new XMPPTCPConnection(xmppConfig);
         this.connection.addAsyncStanzaListener(xmppListener, stanza -> stanza instanceof Message);
         try {
@@ -88,13 +92,9 @@ public class XmppTransport implements Transport {
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
-        } finally {
-            if (connection.isConnected()) {
-                connection.disconnect();
-                System.out.println("Disconnected from the XMPP server.");
-            }
         }
     }
+
     @Override
     public void addListener(TransportListener transportListener) {
 

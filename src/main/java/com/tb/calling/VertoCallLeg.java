@@ -17,12 +17,12 @@ public class VertoCallLeg extends AbstractCallLeg {
         System.out.println("sending Invite...");
         this.setUniqueId(UUID.randomUUID().toString());
         String data =StartCall.createMessage("1001",this.getUniqueId(),connector.getSessionId(),100);
-        connector.sendTransportMessage(new Payload(this.getUniqueId(),data, VertoPacket.Invite));
+        connector.sendMsgToTransport(new Payload(this.getUniqueId(),data, VertoPacket.Invite));
     }
     public void modifyCall() {
         System.out.println("Sending Modify...");
         String data = ModifyCall.createMessage("1001",this.getUniqueId(),connector.getSessionId(),120);
-        connector.sendTransportMessage(new Payload(this.getUniqueId(),data, VertoPacket.Modify));
+        connector.sendMsgToTransport(new Payload(this.getUniqueId(),data, VertoPacket.Modify));
     }
     @Override
     public void onStart(Object message) {

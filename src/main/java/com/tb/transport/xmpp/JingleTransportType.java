@@ -1,4 +1,4 @@
-package com.tb.xmpp;
+package com.tb.transport.xmpp;
 
 public enum JingleTransportType {
     XMPP,

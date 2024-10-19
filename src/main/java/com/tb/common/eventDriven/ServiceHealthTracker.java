@@ -29,7 +29,10 @@ public class ServiceHealthTracker {
         this.connector=connector;
         List<Connector> privateServiceStatusListeners=
                 new ArrayList<>(Arrays.asList(connector));
-        this.healthCounter = new ServiceHealthCounter(pingParams,privateServiceStatusListeners);
+        if (pingParams!=null)
+        {
+            this.healthCounter = new ServiceHealthCounter(pingParams,privateServiceStatusListeners);
+        }
     }
     public void startServicePingMonitor() {
         if (this.pingParams==null){

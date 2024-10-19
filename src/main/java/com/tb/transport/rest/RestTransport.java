@@ -2,13 +2,12 @@ package com.tb.transport.rest;
 
 import com.tb.common.ServiceEnum.TransportPacket;
 import com.tb.common.eventDriven.TransportListener;
-import com.tb.common.eventDriven.Transport;
+import com.tb.transport.Transport;
 import com.tb.common.eventDriven.Payload;
 import okhttp3.*;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class RestTransport implements Transport {
@@ -24,19 +23,21 @@ public class RestTransport implements Transport {
             this.publicListeners.add(publicListener);
         }
     }
-    public void init(Transport transport) {
-        this.client = new OkHttpClient();
+    public void connectOrInit() {
+        //this.client = new OkHttpClient();
+        this.client= new OkHttpClient.Builder()
+                .protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1))
+                .build();
     }
 
     @Override
-    public void addListener(TransportListener transportListener) {
-
+    public void addListener(TransportListener publicListener) {
+        this.publicListeners.add(publicListener);
     }
 
     @Override
     public void sendMessage(Payload payload) {
         List<TransportListener> listeners= this.publicListeners;
-        RequestBody body = RequestBody.create(payload.getData(), MediaType.parse("text/xml; charset=utf-8"));
 
         // Build the HTTP request with the URL, headers, and the XML payload
         String url= "";
@@ -45,10 +46,19 @@ public class RestTransport implements Transport {
         }else{
             url=this.baseUrl.append("/").append(payload.getUrlSuffix()).toString();
         }
-        Request request = new Request.Builder()
+//        RequestBody body = RequestBody.create(payload.getData(), MediaType.parse("text/xml; charset=utf-8"));
+        RequestBody body = RequestBody.create(payload.getData().trim(), MediaType.parse("text/xml"));
+        /*Request request = new Request.Builder()
                 .url(url)
                 .addHeader("Content-Type", "text/xml")
                 .post(body)
+                .build();*/
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .addHeader("User-Agent", "curl/7.74.0")  // Add the User-Agent header
+                .addHeader("Accept", "*/*")               // Add Accept header
+                .addHeader("Content-Type", "text/xml")    // Ensure this header is correct
                 .build();
         this.client.newCall(request).enqueue(new Callback() {
             @Override
@@ -67,6 +77,7 @@ public class RestTransport implements Transport {
                     listener.onTransportMessage(new Payload(UUID.randomUUID().toString(),
                             response.body().toString(), TransportPacket.Payload));
                 }
+                System.out.println("rest msg sent...");
             }
         });
 

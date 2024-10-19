@@ -11,14 +11,11 @@ import org.jxmpp.stringprep.XmppStringprepException;
 
 import java.io.IOException;
 
-import static com.tb.xmpp.XmppClientTb.*;
-import static com.tb.xmpp.XmppClientTb.onAccept;
-
 public class XmppRun {
     // Build the XMPP configuration
     public void XmppInstance() throws XmppStringprepException {
         XMPPTCPConnectionConfiguration config = XMPPTCPConnectionConfiguration.builder()
-                .setUsernameAndPassword("test101", "test123")  // Update credentials as needed
+                .setUsernameAndPassword("test5", "test123")  // Update credentials as needed
                 .setXmppDomain("localhost")
                 .setHost("192.168.0.31")  // Replace with your XMPP server IP
                 .setPort(5222)  // Default XMPP port

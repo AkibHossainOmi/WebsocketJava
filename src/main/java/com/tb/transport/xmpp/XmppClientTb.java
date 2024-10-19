@@ -1,4 +1,4 @@
-package com.tb.xmpp;
+package com.tb.transport.xmpp;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.SmackException;

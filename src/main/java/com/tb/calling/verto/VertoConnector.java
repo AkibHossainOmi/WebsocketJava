@@ -1,5 +1,6 @@
 package com.tb.calling.verto;
 
+import com.tb.transport.Transport;
 import com.tb.transport.websocket.WebSocketTransport;
 import com.tb.calling.verto.msgTemplates.Login;
 import com.tb.calling.verto.msgTemplates.Ping;
@@ -51,18 +52,17 @@ public class VertoConnector implements Connector{
         //sendHangup();
         //this.pingFactory= new VertoPingUtil();
     }
-    public void addListeners(List<TransportListener> publicListeners){
-        for (TransportListener publicListener : publicListeners) {
+    @Override
+    public void addListener(TransportListener publicListener){
             this.publicListeners.add(publicListener);
-        }
     }
     @Override
-    public void connect() {
+    public void connectOrInit() {
         List<TransportListener>tl = new ArrayList<>();
         tl.add(this.transportListener);
         this.transport = new WebSocketTransport(params.webSocketSettings, tl);
         this.vertoWebSocketSessionId = UUID.randomUUID().toString();
-        this.transport.connect(this.transport);
+        this.transport.connectOrInit();
     }
 
     @Override
@@ -159,7 +159,7 @@ public class VertoConnector implements Connector{
                 VertoPacket.Ping);
     }
     @Override
-    public void sendTransportMessage(Payload payload) {
+    public void sendMsgToTransport(Payload payload) {
         this.transport.sendMessage(payload);
     }
 }

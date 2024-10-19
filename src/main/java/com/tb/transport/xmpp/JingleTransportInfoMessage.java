@@ -1,4 +1,4 @@
-package com.tb.xmpp;//package org.example;
+package com.tb.transport.xmpp;//package org.example;
 //import org.jivesoftware.smack.packet.IQ;
 //import org.jivesoftware.smack.packet.Message;
 //import org.jivesoftware.smack.packet.Packet;
