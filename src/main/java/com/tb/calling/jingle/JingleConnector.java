@@ -97,7 +97,7 @@ public class JingleConnector implements Connector{
                 VertoPacket.Ping);
     }
     @Override
-    public void sendMsgToTransport(Payload payload) {
+    public void sendMsgToConnector(Payload payload) {
         HashMap<String, Object> metadata=payload.getMetadata();
         Boolean useRest= (Boolean) metadata.get("useRest");
         if (useRest){

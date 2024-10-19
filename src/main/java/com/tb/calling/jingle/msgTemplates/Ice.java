@@ -1,12 +1,10 @@
 package com.tb.calling.jingle.msgTemplates;
 
-import okhttp3.*;
+
 
 public class Ice {
-    public String createMessage(String serverIp, String apartyWithId, String bpartyWithId, String id, String deviceIp) {
+    public static String createMessage( String apartyWithId, String bpartyWithId, String id, String deviceIp) {
 
-        // Define the URL where the REST request will be sent
-        String url = String.format("http://%s:5280/rest", serverIp);
 
         // Construct the XML payload
         String xmlPayload = String.format(

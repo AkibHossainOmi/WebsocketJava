@@ -1,37 +1,35 @@
 package com.tb.calling.jingle;
 
 import com.tb.calling.AbstractCallLeg;
+import com.tb.calling.VertoCallLeg;
 import com.tb.calling.jingle.msgTemplates.Accept;
+import com.tb.calling.jingle.msgTemplates.Ice;
 import com.tb.calling.jingle.msgTemplates.Proceed;
 import com.tb.calling.jingle.msgTemplates.SDP;
-import com.tb.common.ServiceEnum.PayloadType;
+import com.tb.calling.verto.VertoConnector;
+import com.tb.common.Delay;
 import com.tb.common.ServiceEnum.TransportPacket;
 import com.tb.common.UUIDGen;
 import com.tb.common.eventDriven.Connector;
 import com.tb.common.eventDriven.Payload;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class JingleCallLeg extends AbstractCallLeg {
+    VertoCallLeg vertoCall;
+    public VertoConnector getVertoConnector() {
+        return vertoConnector;
+    }
+
+    public void setVertoConnector(VertoConnector vertoConnector) {
+        this.vertoConnector = vertoConnector;
+    }
+
+    VertoConnector vertoConnector;
     public JingleCallLeg(Connector connector, String uniqueId, String aParty, String bParty) {
         super(connector, uniqueId, aParty, bParty);
         connector.addListener(this);
-    }
-    @Override
-    public void startCall() {
-        /*System.out.println("sending Invite...");
-        this.setUniqueId(UUID.randomUUID().toString());
-        String data =StartCall.createMessage("1001",this.getUniqueId(),connector.getSessionId(),100);
-        connector.sendTransportMessage(new Payload(this.getUniqueId(),data, VertoPacket.Invite));*/
-    }
-    public void modifyCall() {
-        /*System.out.println("Sending Modify...");
-        String data = ModifyCall.createMessage("1001",this.getUniqueId(),connector.getSessionId(),120);
-        connector.sendTransportMessage(new Payload(this.getUniqueId(),data, VertoPacket.Modify));*/
+
     }
     @Override
     public void onStart(Object message) {
@@ -42,12 +40,6 @@ public class JingleCallLeg extends AbstractCallLeg {
     public void onNewMessage(Object message) throws IOException {
 
     }
-
-    @Override
-    public void startSession(Object message) {
-
-    }
-
     @Override
     public void startSession() {
 
@@ -106,30 +98,60 @@ public class JingleCallLeg extends AbstractCallLeg {
     @Override
     public void onTransportMessage(Payload data) {
         String msg = data.getData();
-
+        String extractedId="";
         if (msg.contains("jm-propose")) {
             // Find the positions of the relevant substrings
             int startIndex = msg.indexOf("id=jm-propose-") + "id=jm-propose-".length();
             int endIndex = msg.indexOf(",type=chat");
 
             // Extract the ID from the message
-            String extractedId = msg.substring(startIndex, endIndex);
-            System.out.println(extractedId);
+            extractedId = msg.substring(startIndex, endIndex);
+            this.vertoCall= new VertoCallLeg(this.vertoConnector,UUIDGen.getNextAsStr(),"09646888888","01754105098");
+            this.vertoCall.startSession();
+            Delay.sleep(5000);
 
-            // Call Accept class and pass extractedId
-            String accept= Accept.createMessage( "test6@localhost/Conversations.ciMG", "test6@localhost", extractedId);
-            Payload p= new Payload(UUIDGen.getNextAsStr(),accept, TransportPacket.Payload);
-            p.getMetadata().put("useRest", true);
-             this.getConnector().sendMsgToTransport(p);
-            System.out.println(accept);
-            // Call Proceed class and pass extractedId
-            Proceed proceed = new Proceed();
-            proceed.createMessage("192.168.0.31", "test5@localhost/Conversations.Vmyt", "test5@localhost/Conversations.Vmyt", extractedId);
-            System.out.println(proceed);
-            // Print the message for debugging
-            //System.out.println("Extracted ID: " + extractedId);
-            //System.out.println(msg);
+            accept(extractedId);
+            proceed(extractedId);
+
         }
+        if (msg.contains("session-initiate")){
+
+            String sidStart = "sid=&apos;";
+            String sidEnd = "&apos; action";
+
+            // Find the start and end index of 'sid'
+            int startIndex = msg.indexOf(sidStart) + sidStart.length();
+            int endIndex = msg.indexOf(sidEnd, startIndex);
+
+            // Extract the SID from the message
+            String extractedSid = msg.substring(startIndex, endIndex);
+
+            System.out.println(extractedSid);
+            String sdp = SDP.createMessage("test5@localhost/Conversations.Ae9N","test6@localhost/Conversations.9FIn",extractedSid);
+            Payload s= new Payload(UUIDGen.getNextAsStr(),sdp, TransportPacket.Payload);
+            s.getMetadata().put("useRest", true);
+            this.getConnector().sendMsgToConnector(s);
+
+            String ice = Ice.createMessage("test5@localhost/Conversations.Ae9N","test6@localhost/Conversations.9FIn",extractedSid,"192.168.0.126");
+            Payload i= new Payload(UUIDGen.getNextAsStr(),ice, TransportPacket.Payload);
+            i.getMetadata().put("useRest", true);
+            this.getConnector().sendMsgToConnector(i);
+        }
+    }
+
+    private void proceed(String extractedId) {
+        String proceed = Proceed.createMessage("test5@localhost/Conversations.Ae9N", "test6@localhost/Conversations.9FIn", extractedId);
+        Payload p= new Payload(UUIDGen.getNextAsStr(),proceed, TransportPacket.Payload);
+        p.getMetadata().put("useRest", true);
+        this.getConnector().sendMsgToConnector(p);
+    }
+
+    private void accept(String extractedId) {
+        // Call Accept class and pass extractedId
+        String accept= Accept.createMessage( "test6@localhost/Conversations.9FIn", "test6@localhost", extractedId);
+        Payload p= new Payload(UUIDGen.getNextAsStr(),accept, TransportPacket.Payload);
+        p.getMetadata().put("useRest", true);
+        this.getConnector().sendMsgToConnector(p);
     }
 
     @Override

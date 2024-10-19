@@ -22,7 +22,7 @@ public class CallBridge {
     public void onStart(AbstractCallLeg origLeg) {
         for (AbstractCallLeg otherLeg :
                 getOtherLegs(origLeg).toList()) {
-            otherLeg.startCall();
+            otherLeg.startSession();
         }
     }
     public void onRinging(AbstractCallLeg origLeg) {

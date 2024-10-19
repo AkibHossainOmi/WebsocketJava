@@ -14,6 +14,10 @@ import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class VertoConnector implements Connector{
+    public VertoConnectParams getParams() {
+        return params;
+    }
+
     //Transport webSocket;
     VertoConnectParams params;
 
@@ -88,15 +92,16 @@ public class VertoConnector implements Connector{
 
             @Override
             public void onTransportMessage(Payload payload) {
+                System.out.println("Verto:" + payload.getData());
                 if (payload.getPayloadType()== TransportPacket.Payload){
                     for (TransportListener publicListener : mySelf.getPublicListeners()) {
                         publicListener.onTransportMessage(payload);
                     }
                 }
                 if (payload.getPayloadType()== TransportPacket.Payload){
-                    if (payload.getData().contains("verto.ping")){
+                   /* if (payload.getData().contains("verto.ping")){
                         mySelf.getServiceHealthTracker().notify();
-                    }
+                    }*/
                 }
             }
 
@@ -159,7 +164,7 @@ public class VertoConnector implements Connector{
                 VertoPacket.Ping);
     }
     @Override
-    public void sendMsgToTransport(Payload payload) {
+    public void sendMsgToConnector(Payload payload) {
         this.transport.sendMessage(payload);
     }
 }

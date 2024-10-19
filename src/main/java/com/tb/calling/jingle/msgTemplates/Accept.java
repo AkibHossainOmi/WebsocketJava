@@ -9,15 +9,10 @@ public class Accept {
         // Construct the XML payload
         String xmlPayload = String.format(
                 """
-                   <message from="%s" to="%s" type="chat">
-                        <accept
-                            xmlns="urn:xmpp:jingle-message:0" id="%s"/>
-                            <store
-                                xmlns="urn:xmpp:hints"/>
-                   </message>
+                <message from="%s" to="%s" type="chat"><accept xmlns="urn:xmpp:jingle-message:0" id="%s"/><store xmlns="urn:xmpp:hints"/></message>
                 """, bpartyWithId,bPartyWithoutId,id);
 
-        return xmlPayload;
+        return xmlPayload.trim();
 
     }
 

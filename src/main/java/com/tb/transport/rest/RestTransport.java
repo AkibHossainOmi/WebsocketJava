@@ -7,6 +7,7 @@ import com.tb.common.eventDriven.Payload;
 import okhttp3.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -24,10 +25,10 @@ public class RestTransport implements Transport {
         }
     }
     public void connectOrInit() {
-        //this.client = new OkHttpClient();
-        this.client= new OkHttpClient.Builder()
+        this.client = new OkHttpClient();
+        /*this.client= new OkHttpClient.Builder()
                 .protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1))
-                .build();
+                .build();*/
     }
 
     @Override
@@ -47,7 +48,8 @@ public class RestTransport implements Transport {
             url=this.baseUrl.append("/").append(payload.getUrlSuffix()).toString();
         }
 //        RequestBody body = RequestBody.create(payload.getData(), MediaType.parse("text/xml; charset=utf-8"));
-        RequestBody body = RequestBody.create(payload.getData().trim(), MediaType.parse("text/xml"));
+        RequestBody body = RequestBody.create(payload.getData().trim().getBytes(StandardCharsets.UTF_8),
+                MediaType.parse("text/xml"));
         /*Request request = new Request.Builder()
                 .url(url)
                 .addHeader("Content-Type", "text/xml")
@@ -60,7 +62,37 @@ public class RestTransport implements Transport {
                 .addHeader("Accept", "*/*")               // Add Accept header
                 .addHeader("Content-Type", "text/xml")    // Ensure this header is correct
                 .build();
-        this.client.newCall(request).enqueue(new Callback() {
+
+        try {
+            // Synchronously execute the request
+            Response response = this.client.newCall(request).execute();
+
+            // Check if the response is successful
+            if (response.isSuccessful()) {
+                // Notify listeners with the response payload
+                for (TransportListener listener : listeners) {
+                    listener.onTransportMessage(new Payload(UUID.randomUUID().toString(),
+                            response.body().string(), TransportPacket.Payload));
+                }
+                System.out.println("REST message sent...");
+            } else {
+                // Handle unsuccessful response
+                System.err.println("Request failed: " + response.code());
+                for (TransportListener listener : listeners) {
+                    listener.onTransportError(new Payload(UUID.randomUUID().toString(),
+                            "Error: " + response.code(), TransportPacket.TransportError));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Notify listeners in case of failure
+            for (TransportListener listener : listeners) {
+                listener.onTransportError(new Payload(UUID.randomUUID().toString(),
+                        e.getMessage(), TransportPacket.TransportError));
+            }
+        }
+
+        /*this.client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
@@ -79,7 +111,7 @@ public class RestTransport implements Transport {
                 }
                 System.out.println("rest msg sent...");
             }
-        });
+        });*/
 
     }
 

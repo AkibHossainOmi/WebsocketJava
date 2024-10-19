@@ -21,6 +21,15 @@ import java.util.UUID;
 public class Main {
 
     public static void main(String[] args) throws XmppStringprepException {
+        VertoConnectParams params = new VertoConnectParams("09646888888",
+                "09646888888##asdf",
+                new WebSocketSettings(WebSocketType.Ws, "ws://iptsp.cosmocom.net:8081", 1000),
+                new ServicePingParams());
+        VertoConnector vc = new VertoConnector(params);
+        vc.connectOrInit();
+        delay(1000);
+        vc.login();
+
         RestSettings restSettings= new RestSettings("http://192.168.0.31:5280/rest");
         XmppSettings xmppSettings= new XmppSettings("192.168.0.31",5222,"test6",
                 "test123","localhost", ConnectionConfiguration.SecurityMode.disabled,1);
@@ -31,25 +40,15 @@ public class Main {
         /*XmppRun xmppRun = new XmppRun();
         xmppRun.XmppInstance();*/
         // Wait for a keystroke before exiting
+        jingleCall.setVertoConnector(vc);
         System.out.println("Press Enter to continue...");
         new Scanner(System.in).nextLine();
 
-        /*VertoConnectParams params = new VertoConnectParams("1001",
-                "1234",
-                new WebSocketSettings(WebSocketType.Ws, "ws://192.168.0.31:8081", 1000),
-                new ServicePingParams());
-        VertoConnector vc = new VertoConnector(params);
-        vc.connectOrInit();
-        delay(1000);
-        vc.login();
-        delay(3000);
-        vc.ping();
 
-        VertoCallLeg newCall= new VertoCallLeg(vc, UUID.randomUUID().toString(),"1001","9999");
-        vc.addListeners(Arrays.asList(newCall));
-        newCall.startCall();
-        delay(10000);
-        newCall.modifyCall();*/
+        //delay(3000);
+        //vc.ping();
+
+
 
         // Wait for a keystroke before exiting
         System.out.println("Press Enter to exit...");

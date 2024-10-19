@@ -1,5 +1,8 @@
 package com.tb.transport.xmpp;
 
+import com.tb.calling.AbstractCallLeg;
+import com.tb.calling.jingle.msgTemplates.Ice;
+import com.tb.calling.jingle.msgTemplates.SDP;
 import com.tb.common.ServiceEnum.TransportPacket;
 import com.tb.common.UUIDGen;
 import com.tb.common.eventDriven.TransportListener;
@@ -9,6 +12,9 @@ import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.iqrequest.AbstractIqRequestHandler;
+import org.jivesoftware.smack.iqrequest.IQRequestHandler;
+import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
@@ -27,6 +33,8 @@ public class XmppTransport implements Transport {
     XMPPTCPConnectionConfiguration xmppConfig;
     AbstractXMPPConnection connection;
     StanzaListener xmppListener;
+    IQRequestHandler iqListener;
+
     XmppSettings settings;
     List<TransportListener> publicListeners = new CopyOnWriteArrayList<>();
 
@@ -42,12 +50,14 @@ public class XmppTransport implements Transport {
                     .setXmppDomain(settings.domain)
                     .setHost(settings.hostname)  // Replace with your XMPP server IP
                     .setPort(settings.port)  // Default XMPP port
+                    .setResource("Conversations.9FIn")
                     .setSecurityMode(XMPPTCPConnectionConfiguration.SecurityMode.disabled)  // Disable SSL for local test
                     .build();
         } catch (XmppStringprepException e) {
             throw new RuntimeException(e);
         }
         this.xmppListener = createXmppListener(connection);
+        this.iqListener = createIqListener(this.connection);
     }
 
     private StanzaListener createXmppListener(AbstractXMPPConnection connection) {
@@ -62,10 +72,35 @@ public class XmppTransport implements Transport {
         };
     }
 
+    private IQRequestHandler createIqListener(AbstractXMPPConnection connection) {
+        return new AbstractIqRequestHandler("jingle", "urn:xmpp:jingle:1", IQ.Type.set, IQRequestHandler.Mode.sync) {
+            @Override
+            public IQ handleIQRequest(IQ iqRequest) {
+                // Handle the incoming IQ request
+                System.out.println("Received IQ: " + iqRequest.toXML());
+
+
+                for (TransportListener publicListener : publicListeners) {
+                    publicListener.onTransportMessage(new Payload(UUID.randomUUID().toString(),
+                            iqRequest.getChildElementXML().toString(), TransportPacket.Payload));
+                }
+
+
+                // You can generate an appropriate IQ response here
+                //IQ resultIQ = IQ.createResultIQ(iqRequest); // Creates an IQ result reply
+                // Or return an error if necessary
+                // IQ errorIQ = IQ.createErrorResponse(iqRequest, StanzaError.from(Condition.bad_request, "Invalid IQ request"));
+                //return resultIQ;
+                return null;
+            }
+        };
+    }
+
     @Override
     public void connectOrInit() {
         this.connection = new XMPPTCPConnection(xmppConfig);
         this.connection.addAsyncStanzaListener(xmppListener, stanza -> stanza instanceof Message);
+        this.connection.registerIQRequestHandler(this.createIqListener(this.connection));
         try {
             // Connect and log in
             this.connection.connect();

@@ -29,10 +29,9 @@ public abstract class AbstractCallLeg implements CallLeg, TransportListener {
     private String aParty;
     private String bParty;
     private CallBridge callBridge;
-    public abstract void startCall() ;
     public abstract void onStart(Object message);
     public abstract void onNewMessage(Object message) throws IOException;
-    public abstract void startSession(Object message);
+    public abstract void startSession();
     public abstract void updateSession();
     public abstract void disconnect();
     public abstract void onRing();
