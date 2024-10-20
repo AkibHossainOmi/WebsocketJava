@@ -1,5 +1,6 @@
 package com.tb.calling;
 
+import com.tb.calling.jingle.JingleCallLeg;
 import com.tb.common.ServiceEnum.VertoPacket;
 import com.tb.common.eventDriven.Connector;
 import com.tb.common.eventDriven.Payload;
@@ -14,6 +15,16 @@ import java.util.regex.Pattern;
 
 public class VertoCallLeg extends AbstractCallLeg {
     UniqueIntGenerator intGenerator= new UniqueIntGenerator(0);
+
+    public JingleCallLeg getJingleCall() {
+        return jingleCall;
+    }
+
+    public void setJingleCall(JingleCallLeg jingleCall) {
+        this.jingleCall = jingleCall;
+    }
+
+    JingleCallLeg jingleCall;
     public VertoCallLeg(Connector connector, String uniqueId, String aParty, String bParty) {
         super(connector, uniqueId, aParty, bParty);
     }
@@ -30,8 +41,10 @@ public class VertoCallLeg extends AbstractCallLeg {
     public void startSession() {
         System.out.println("sending Invite...");
         this.setUniqueId(UUID.randomUUID().toString());
-        String data =StartCall.createMessage("09646888888",this.getUniqueId(),connector.getSessionId(),intGenerator.getNext());
-        connector.sendMsgToConnector(new Payload(this.getUniqueId(),data, VertoPacket.Invite));
+        String msg =StartCall.createMessage("09646888888",this.getUniqueId(),connector.getSessionId(),intGenerator.getNext()
+        ,this.remoteIce.getIpAddress(),this.remoteIce.getPort());
+        connector.sendMsgToConnector(new Payload(this.getUniqueId(),msg, VertoPacket.Invite));
+        System.out.println(msg);
     }
 
     @Override
@@ -108,13 +121,26 @@ public class VertoCallLeg extends AbstractCallLeg {
     @Override
     public void onTransportMessage(Payload data) {
         String msg = data.getData();
-        switch (getCallMsgType(msg)){
+        CallMsgType callMsgType = getCallMsgType(msg);
+        switch (callMsgType){
             case TRYING -> {}
             case RINGING -> {
                 String ipPort=extractSdpIpAndPort(msg);
+                String[] tempArr=ipPort.split(":");
+                int port = Integer.parseInt(tempArr[1]);
+                if (port<=0)
+                    throw new RuntimeException("Media Port must be >0 ");
+                ICECandidate candidate= new ICECandidate(tempArr[0],
+                        port,CandidateType.HOST,TransportProtocol.UDP);
+                this.jingleCall.setRemoteIce(candidate);
+                this.jingleCall.sendSdp();
+                this.jingleCall.sendIce();
             }
             case ANSWERED -> {}
             case HANGUP -> {}
+            default -> {
+
+            }
         }
 
     }

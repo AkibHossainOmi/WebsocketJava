@@ -7,6 +7,15 @@ import com.tb.common.eventDriven.TransportListener;
 
 import java.io.IOException;
 public abstract class AbstractCallLeg implements CallLeg, TransportListener {
+    public ICECandidate getRemoteIce() {
+        return remoteIce;
+    }
+
+    public void setRemoteIce(ICECandidate remoteIce) {
+        this.remoteIce = remoteIce;
+    }
+
+    ICECandidate remoteIce;
     public Connector getConnector() {
         return connector;
     }

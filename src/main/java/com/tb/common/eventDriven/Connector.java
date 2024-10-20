@@ -11,7 +11,7 @@ public interface Connector {
     void connectOrInit();
     String getSessionId();
     void onServiceStatusChange(ServiceStatus status);
-    void addListener(TransportListener listener);
+    void addPublicListener(TransportListener listener);
 
 }
 

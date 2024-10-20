@@ -74,7 +74,6 @@ public class RestTransport implements Transport {
                     listener.onTransportMessage(new Payload(UUID.randomUUID().toString(),
                             response.body().string(), TransportPacket.Payload));
                 }
-                System.out.println("REST message sent...");
             } else {
                 // Handle unsuccessful response
                 System.err.println("Request failed: " + response.code());

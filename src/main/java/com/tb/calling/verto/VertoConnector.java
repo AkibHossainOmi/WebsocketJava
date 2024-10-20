@@ -57,7 +57,7 @@ public class VertoConnector implements Connector{
         //this.pingFactory= new VertoPingUtil();
     }
     @Override
-    public void addListener(TransportListener publicListener){
+    public void addPublicListener(TransportListener publicListener){
             this.publicListeners.add(publicListener);
     }
     @Override
