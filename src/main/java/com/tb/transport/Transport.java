@@ -1,7 +1,7 @@
 package com.tb.transport;
 
 
-import com.tb.common.eventDriven.Payload;
+import com.tb.common.eventDriven.RequestAndResponse.Payload;
 import com.tb.common.eventDriven.TransportListener;
 
 public interface Transport {

@@ -4,6 +4,6 @@ public enum CallMsgType {
     SESSION_START,
     TRYING,
     RINGING,
-    ANSWERED,
+    ANSWER,
     HANGUP
 }

@@ -1,11 +1,12 @@
 package com.tb.transport.websocket;
-import com.tb.common.ServiceEnum.TransportPacket;
+import com.tb.common.eventDriven.RequestAndResponse.Enums.TransportPacket;
 import com.tb.common.eventDriven.TransportListener;
 import com.tb.transport.Transport;
-import com.tb.common.eventDriven.Payload;
+
 import jdk.jshell.spi.ExecutionControl;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
+import com.tb.common.eventDriven.RequestAndResponse.Payload;
 
 import java.net.URI;
 import java.util.HashMap;

@@ -1,6 +1,4 @@
-package com.tb.common.eventDriven;
-
-import com.tb.common.ServiceEnum.PayloadType;
+package com.tb.common.eventDriven.RequestAndResponse;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -18,6 +16,11 @@ public class Payload {
     public void setUrlSuffix(String urlSuffix) {
         this.urlSuffix = urlSuffix;
     }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
     String id;
     public PayloadType getPayloadType() {
         return payloadType;
@@ -39,6 +42,12 @@ public class Payload {
     LocalDateTime time;
     public Payload(String id,String data, PayloadType payloadType) {
         this.id=id;
+        this.payloadType=payloadType;
+        this.data = data;
+        this.headers = new HashMap<>();
+        this.metadata = new HashMap<>();
+    }
+    public Payload(String data, PayloadType payloadType) {
         this.payloadType=payloadType;
         this.data = data;
         this.headers = new HashMap<>();

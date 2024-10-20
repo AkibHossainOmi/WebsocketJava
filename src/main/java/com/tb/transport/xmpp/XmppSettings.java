@@ -10,16 +10,21 @@ public class XmppSettings {
     public String xmppLogin;
     public String password;
     public String domain;
+    public String deviceId;
     public XMPPTCPConnectionConfiguration.SecurityMode securityMode;
     public int heartbitIntervalSec =1;
     public ServicePingParams servicePingParams =null;
 
-    public XmppSettings(String hostname, int port, String xmppLogin, String password, String domain, XMPPTCPConnectionConfiguration.SecurityMode securityMode, int heartbitIntervalSec) {
+
+    public XmppSettings(String hostname, int port, String xmppLogin,
+                        String password, String domain, String deviceId,
+                        XMPPTCPConnectionConfiguration.SecurityMode securityMode, int heartbitIntervalSec) {
         this.hostname = hostname;
         this.port = port;
         this.xmppLogin = xmppLogin;
         this.password = password;
         this.domain = domain;
+        this.deviceId=deviceId;
         this.securityMode = securityMode;
         this.heartbitIntervalSec = heartbitIntervalSec;
     }

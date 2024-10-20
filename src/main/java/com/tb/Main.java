@@ -32,11 +32,11 @@ public class Main {
 
         RestSettings restSettings= new RestSettings("http://192.168.0.31:5280/rest");
         XmppSettings xmppSettings= new XmppSettings("192.168.0.31",5222,"test6",
-                "test123","localhost", ConnectionConfiguration.SecurityMode.disabled,1);
+                "test123","localhost","Conversations.restB",
+                ConnectionConfiguration.SecurityMode.disabled,1);
         JingleConnector jingleConnector= new JingleConnector(xmppSettings,restSettings);
         jingleConnector.connectOrInit();
-        JingleCallLeg jingleCall= new JingleCallLeg(jingleConnector,"TB_CUSTOM_SESSION",
-                "test5@localhost/Conversations.Vmyt","test6@localhost");
+        JingleCallLeg jingleCall= new JingleCallLeg(jingleConnector);
         /*XmppRun xmppRun = new XmppRun();
         xmppRun.XmppInstance();*/
         // Wait for a keystroke before exiting

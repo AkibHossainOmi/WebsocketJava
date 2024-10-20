@@ -1,4 +1,4 @@
-package com.tb.common.eventDriven;
+package com.tb.common.uniqueIdGenerator;
 
 public class UniqueLongGenerator implements UniqueIdGenerator<Long> {
     Long value = 0L;

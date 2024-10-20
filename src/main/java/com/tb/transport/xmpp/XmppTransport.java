@@ -1,13 +1,9 @@
 package com.tb.transport.xmpp;
 
-import com.tb.calling.AbstractCallLeg;
-import com.tb.calling.jingle.msgTemplates.Ice;
-import com.tb.calling.jingle.msgTemplates.SDP;
-import com.tb.common.ServiceEnum.TransportPacket;
+import com.tb.common.eventDriven.RequestAndResponse.Enums.TransportPacket;
 import com.tb.common.UUIDGen;
 import com.tb.common.eventDriven.TransportListener;
 import com.tb.transport.Transport;
-import com.tb.common.eventDriven.Payload;
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.StanzaListener;
@@ -27,6 +23,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
+import com.tb.common.eventDriven.RequestAndResponse.Payload;
+
 
 public class XmppTransport implements Transport {
     URI uri;
@@ -50,7 +48,7 @@ public class XmppTransport implements Transport {
                     .setXmppDomain(settings.domain)
                     .setHost(settings.hostname)  // Replace with your XMPP server IP
                     .setPort(settings.port)  // Default XMPP port
-                    .setResource("Conversations.9FIn")
+                    .setResource(settings.deviceId)
                     .setSecurityMode(XMPPTCPConnectionConfiguration.SecurityMode.disabled)  // Disable SSL for local test
                     .build();
         } catch (XmppStringprepException e) {
@@ -82,7 +80,7 @@ public class XmppTransport implements Transport {
 
                 for (TransportListener publicListener : publicListeners) {
                     publicListener.onTransportMessage(new Payload(UUID.randomUUID().toString(),
-                            iqRequest.getChildElementXML().toString(), TransportPacket.Payload));
+                            iqRequest.toXML().toString(), TransportPacket.Payload));
                 }
 
 

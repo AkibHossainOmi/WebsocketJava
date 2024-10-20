@@ -1,7 +1,7 @@
 package com.tb.common.eventDriven;
 
 import com.tb.transport.Transport;
-
+import com.tb.common.eventDriven.RequestAndResponse.Payload;
 public interface Connector {
     void sendMsgToConnector(Payload payload);
     Payload createServicePingMsg();

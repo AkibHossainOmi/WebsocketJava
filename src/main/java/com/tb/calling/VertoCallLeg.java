@@ -1,18 +1,16 @@
 package com.tb.calling;
 
 import com.tb.calling.jingle.JingleCallLeg;
-import com.tb.common.ServiceEnum.VertoPacket;
+import com.tb.common.eventDriven.RequestAndResponse.Enums.VertoPacket;
 import com.tb.common.eventDriven.Connector;
-import com.tb.common.eventDriven.Payload;
-import com.tb.calling.verto.msgTemplates.ModifyCall;
 import com.tb.calling.verto.msgTemplates.StartCall;
-import com.tb.common.eventDriven.UniqueIntGenerator;
+import com.tb.common.uniqueIdGenerator.UniqueIntGenerator;
 
 import java.io.IOException;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import com.tb.common.eventDriven.RequestAndResponse.Payload;
 public class VertoCallLeg extends AbstractCallLeg {
     UniqueIntGenerator intGenerator= new UniqueIntGenerator(0);
 
@@ -25,8 +23,8 @@ public class VertoCallLeg extends AbstractCallLeg {
     }
 
     JingleCallLeg jingleCall;
-    public VertoCallLeg(Connector connector, String uniqueId, String aParty, String bParty) {
-        super(connector, uniqueId, aParty, bParty);
+    public VertoCallLeg(Connector connector) {
+        super(connector);
     }
     @Override
     public void onStart(Object message) {
@@ -45,6 +43,7 @@ public class VertoCallLeg extends AbstractCallLeg {
         ,this.remoteIce.getIpAddress(),this.remoteIce.getPort());
         connector.sendMsgToConnector(new Payload(this.getUniqueId(),msg, VertoPacket.Invite));
         System.out.println(msg);
+        this.callState= CallState.SESSION_START;
     }
 
     @Override
@@ -125,6 +124,9 @@ public class VertoCallLeg extends AbstractCallLeg {
         switch (callMsgType){
             case TRYING -> {}
             case RINGING -> {
+                if (this.callState==CallState.SESSION_START){
+                    this.callState=CallState.RINGING;
+                }
                 String ipPort=extractSdpIpAndPort(msg);
                 String[] tempArr=ipPort.split(":");
                 int port = Integer.parseInt(tempArr[1]);
@@ -132,11 +134,14 @@ public class VertoCallLeg extends AbstractCallLeg {
                     throw new RuntimeException("Media Port must be >0 ");
                 ICECandidate candidate= new ICECandidate(tempArr[0],
                         port,CandidateType.HOST,TransportProtocol.UDP);
-                this.jingleCall.setRemoteIce(candidate);
-                this.jingleCall.sendSdp();
-                this.jingleCall.sendIce();
+                if (this.callState==CallState.RINGING) {
+                    this.callState=CallState.RINGING;
+                    this.jingleCall.setRemoteIce(candidate);
+                    this.jingleCall.sendSdp();
+                    this.jingleCall.sendIce();
+                }
             }
-            case ANSWERED -> {}
+            case ANSWER -> {}
             case HANGUP -> {}
             default -> {
 
@@ -163,7 +168,7 @@ public class VertoCallLeg extends AbstractCallLeg {
             return CallMsgType.RINGING;
         }
         else if(msg.contains("verto.answer")){
-            return CallMsgType.ANSWERED;
+            return CallMsgType.ANSWER;
         }
         else if(msg.contains("verto.bye")){
             return CallMsgType.HANGUP;

@@ -1,4 +1,4 @@
-package com.tb.common.eventDriven;
+package com.tb.common.uniqueIdGenerator;
 
 public class UniqueIntGenerator implements UniqueIdGenerator<Integer> {
     int value=0;

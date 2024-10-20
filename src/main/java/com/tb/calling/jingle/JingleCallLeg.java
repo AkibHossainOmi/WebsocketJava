@@ -1,21 +1,27 @@
 package com.tb.calling.jingle;
-
 import com.tb.calling.*;
-import com.tb.calling.jingle.msgTemplates.Accept;
-import com.tb.calling.jingle.msgTemplates.Ice;
-import com.tb.calling.jingle.msgTemplates.Proceed;
-import com.tb.calling.jingle.msgTemplates.SDP;
+import com.tb.calling.jingle.msgTemplates.*;
 import com.tb.calling.verto.VertoConnector;
-import com.tb.common.ServiceEnum.TransportPacket;
+import com.tb.common.eventDriven.RequestAndResponse.Conversations.JingleICE;
+import com.tb.common.eventDriven.RequestAndResponse.Conversations.JingleSDP;
+import com.tb.common.eventDriven.RequestAndResponse.Conversations.JingleMsgType;
+import com.tb.common.eventDriven.RequestAndResponse.Enums.TransportPacket;
+import com.tb.common.StringUtil;
 import com.tb.common.UUIDGen;
-import com.tb.common.eventDriven.Connector;
-import com.tb.common.eventDriven.Payload;
+import com.tb.common.eventDriven.RequestAndResponse.Payload;
+import com.tb.common.eventDriven.RequestAndResponse.MultiThreadedRequestHandler;
+
 
 import java.io.IOException;
 
 public class JingleCallLeg extends AbstractCallLeg {
     VertoCallLeg vertoCall;
+    MultiThreadedRequestHandler multiThreadedRequestHandler;
+    public JingleConnector getJingleConnector() {
+        return jingleConnector;
+    }
 
+    JingleConnector jingleConnector;
 
     public VertoConnector getVertoConnector() {
         return vertoConnector;
@@ -26,10 +32,12 @@ public class JingleCallLeg extends AbstractCallLeg {
     }
 
     VertoConnector vertoConnector;
-    public JingleCallLeg(Connector connector, String uniqueId, String aParty, String bParty) {
-        super(connector, uniqueId, aParty, bParty);
+    public JingleCallLeg(JingleConnector connector) {
+        super(connector);
         connector.addPublicListener(this);
-
+        this.jingleConnector=connector;
+        this.multiThreadedRequestHandler =
+                new MultiThreadedRequestHandler(this.getJingleConnector().restTransport);
     }
     @Override
     public void onStart(Object message) {
@@ -103,33 +111,62 @@ public class JingleCallLeg extends AbstractCallLeg {
             int startIndex = msg.indexOf("id=jm-propose-") + "id=jm-propose-".length();
             int endIndex = msg.indexOf(",type=chat");
 
+            String aPartyWithDevice= StringUtil.Parser
+                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "from=",",");
+            String[] tempArr=aPartyWithDevice.split("/");
+            this.setaParty(tempArr[0]);
+            this.setaPartyDeviceId(tempArr[1]);
+
+            this.setbParty(StringUtil.Parser
+                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "to=",","));
+
+            this.setbPartyDeviceId(this.jingleConnector.xmppSettings.deviceId);
             // Extract the ID from the message
             this.setUniqueId(msg.substring(startIndex, endIndex));
             this.accept();
             this.proceed();
         }
-
-//            sendSdp();
-//
-//            sendIce();
+        if(msg.contains("session-initiate")){
+            JingleSDP jingleSDP= new JingleSDP(msg, JingleMsgType.SDP);
+            assert(!this.getaParty().isEmpty() && !this.getaPartyDeviceId().isEmpty());
+            assert(!this.getbParty().isEmpty() && !this.getbPartyDeviceId().isEmpty());
+            jingleSDP.getMetadata().put("bParty",this.getbParty()+"/" + this.getbPartyDeviceId());
+            jingleSDP.getMetadata().put("aParty",this.getaParty()+"/" + this.getaPartyDeviceId());
+            this.multiThreadedRequestHandler.dispatch(jingleSDP);
+        }
 
         if(msg.contains("transport-info")){//on ice
-            int portIndex = msg.indexOf("port=&apos;") + "port=&apos;".length();
-            String subStr= msg.substring(portIndex);
-            int port= Integer.parseInt(subStr.split("&")[0]);
-            if (port<=0)
-                throw new RuntimeException("Media Port must be >0 ");
-            int ipIndex = msg.indexOf("ip=&apos;") + "ip=&apos;".length();
-            subStr= msg.substring(ipIndex);
-            String ip= subStr.split("&")[0];
+            JingleICE jingleICE = new JingleICE(msg, JingleMsgType.ICE);
+            assert(!this.getaParty().isEmpty() && !this.getaPartyDeviceId().isEmpty());
+            assert(!this.getbParty().isEmpty() && !this.getbPartyDeviceId().isEmpty());
+            jingleICE.getMetadata().put("bParty",this.getbParty()+"/" + this.getbPartyDeviceId());
+            jingleICE.getMetadata().put("aParty",this.getaParty()+"/" + this.getaPartyDeviceId());
+            this.multiThreadedRequestHandler.dispatch(jingleICE);
+            if(this.callState==CallState.SESSION_START){
+                this.callState=CallState.CALLER_SDP_RECEIVED;
+            }
+            if(this.callState==CallState.CALLER_SDP_RECEIVED){
+                int portIndex = msg.indexOf("port=&apos;") + "port=&apos;".length();
+                String subStr= msg.substring(portIndex);
+                int port= Integer.parseInt(subStr.split("&")[0]);
+                if (port<=0)
+                    throw new RuntimeException("Media Port must be >0 ");
+                int ipIndex = msg.indexOf("ip=&apos;") + "ip=&apos;".length();
+                subStr= msg.substring(ipIndex);
+                String ip= subStr.split("&")[0];
 
-            ICECandidate candidate= new ICECandidate(ip,
-                    port, CandidateType.HOST, TransportProtocol.UDP);
-            this.vertoCall= new VertoCallLeg(this.vertoConnector,UUIDGen.getNextAsStr(),"09646888888","01754105098");
-            this.vertoCall.setRemoteIce(candidate);
-            this.vertoCall.getConnector().addPublicListener(this.vertoCall);
-            this.vertoCall.setJingleCall(this);
-            this.vertoCall.startSession();
+                ICECandidate candidate= new ICECandidate(ip,
+                        port, CandidateType.HOST, TransportProtocol.UDP);
+                this.vertoCall= new VertoCallLeg(this.vertoConnector);
+                this.vertoCall.setUniqueId(UUIDGen.getNextAsStr());
+                this.vertoCall.setaParty("09646888888");
+                this.vertoCall.setbParty("01754105098");
+                this.vertoCall.setRemoteIce(candidate);
+                this.vertoCall.getConnector().addPublicListener(this.vertoCall);
+                this.vertoCall.setJingleCall(this);
+                this.vertoCall.startSession();
+                this.callState=CallState.WAITING_RINGING;
+            }
         }
 
     }
@@ -137,8 +174,8 @@ public class JingleCallLeg extends AbstractCallLeg {
     public void sendIce() {
         String ip = this.getRemoteIce().getIpAddress();
         int port = this.getRemoteIce().getPort();
-        String ice = Ice.createMessage("test5@localhost/Conversations.Ae9N",
-                "test6@localhost/Conversations.9FIn",this.getUniqueId(),
+        String ice = Ice.createMessage(getaParty()+"/"+getaPartyDeviceId(),
+                getbParty()+"/"+getbPartyDeviceId(),this.getUniqueId(),
                 ip, port);
         Payload payload= new Payload(UUIDGen.getNextAsStr(),ice, TransportPacket.Payload);
         payload.getMetadata().put("useRest", true);
@@ -146,16 +183,16 @@ public class JingleCallLeg extends AbstractCallLeg {
     }
 
     public void sendSdp() {
-        String sdp = SDP.createMessage("test5@localhost/Conversations.Ae9N",
-                "test6@localhost/Conversations.9FIn",this.getUniqueId());
+        String sdp = SDP.createMessage(getaParty()+"/"+getaPartyDeviceId(),
+                getbParty()+"/"+getbPartyDeviceId(),this.getUniqueId());
         Payload s= new Payload(UUIDGen.getNextAsStr(),sdp, TransportPacket.Payload);
         s.getMetadata().put("useRest", true);
         this.getConnector().sendMsgToConnector(s);
     }
 
     public void proceed() {
-        String proceed = Proceed.createMessage("test5@localhost/Conversations.Ae9N",
-                "test6@localhost/Conversations.9FIn", this.getUniqueId());
+        String proceed = Proceed.createMessage(getaParty()+"/"+getaPartyDeviceId(),
+                getbParty()+"/"+getbPartyDeviceId(), this.getUniqueId());
         Payload p= new Payload(UUIDGen.getNextAsStr(),proceed, TransportPacket.Payload);
         p.getMetadata().put("useRest", true);
         this.getConnector().sendMsgToConnector(p);
@@ -163,7 +200,7 @@ public class JingleCallLeg extends AbstractCallLeg {
 
     public void accept() {
         // Call Accept class and pass extractedId
-        String accept= Accept.createMessage( "test6@localhost/Conversations.9FIn", "test6@localhost", this.getUniqueId());
+        String accept= Accept.createMessage( getbParty()+"/"+getbPartyDeviceId(), getbParty(), this.getUniqueId());
         Payload p= new Payload(UUIDGen.getNextAsStr(),accept, TransportPacket.Payload);
         p.getMetadata().put("useRest", true);
         this.getConnector().sendMsgToConnector(p);

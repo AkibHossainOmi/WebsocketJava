@@ -1,6 +1,7 @@
 package com.tb.calling.jingle.msgTemplates;
 
 
+import com.tb.common.uniqueIdGenerator.ShortIdGenerator;
 
 public class Ice {
     public static String createMessage( String apartyWithId, String bpartyWithId, String id, String deviceIp, int port) {
@@ -9,7 +10,7 @@ public class Ice {
         // Construct the XML payload
         String xmlPayload = String.format(
                 """
-                        <iq to="%s" from="%s" type="set" id="rE54FZrBFAKr">
+                        <iq to="%s" from="%s" type="set" id="%s">
                             <jingle action="transport-info" sid="%s" xmlns="urn:xmpp:jingle:1">
                                 <content creator="initiator" name="0">
                                     <transport ufrag="UHHK" xmlns="urn:xmpp:jingle:transports:ice-udp:1" pwd="OlZzeiJbn2gZ7rvIjCufVzbE">
@@ -18,7 +19,8 @@ public class Ice {
                                 </content>
                             </jingle>
                         </iq>
-                        """, apartyWithId, bpartyWithId, id, deviceIp,port);
+                        """, apartyWithId, bpartyWithId, ShortIdGenerator.getNext()
+                , id, deviceIp,port);
         return xmlPayload;
     }
 }
