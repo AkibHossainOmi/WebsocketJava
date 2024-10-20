@@ -10,6 +10,7 @@ import com.tb.common.StringUtil;
 import com.tb.common.UUIDGen;
 import com.tb.common.eventDriven.RequestAndResponse.Payload;
 import com.tb.common.eventDriven.RequestAndResponse.MultiThreadedRequestHandler;
+import com.tb.common.uniqueIdGenerator.ShortIdGenerator;
 
 
 import java.io.IOException;
@@ -155,13 +156,13 @@ public class JingleCallLeg extends AbstractCallLeg {
                 subStr= msg.substring(ipIndex);
                 String ip= subStr.split("&")[0];
 
-                ICECandidate candidate= new ICECandidate(ip,
+                ICECandidate candidate= new ICECandidate(ShortIdGenerator.getNext(), ip,
                         port, CandidateType.HOST, TransportProtocol.UDP);
                 this.vertoCall= new VertoCallLeg(this.vertoConnector);
                 this.vertoCall.setUniqueId(UUIDGen.getNextAsStr());
                 this.vertoCall.setaParty("09646888888");
                 this.vertoCall.setbParty("01754105098");
-                this.vertoCall.setRemoteIce(candidate);
+                this.vertoCall.addRemoteIceCandidate(candidate);
                 this.vertoCall.getConnector().addPublicListener(this.vertoCall);
                 this.vertoCall.setJingleCall(this);
                 this.vertoCall.startSession();
@@ -171,15 +172,17 @@ public class JingleCallLeg extends AbstractCallLeg {
 
     }
 
-    public void sendIce() {
-        String ip = this.getRemoteIce().getIpAddress();
-        int port = this.getRemoteIce().getPort();
-        String ice = Ice.createMessage(getaParty()+"/"+getaPartyDeviceId(),
-                getbParty()+"/"+getbPartyDeviceId(),this.getUniqueId(),
-                ip, port);
-        Payload payload= new Payload(UUIDGen.getNextAsStr(),ice, TransportPacket.Payload);
-        payload.getMetadata().put("useRest", true);
-        this.getConnector().sendMsgToConnector(payload);
+    public void sendIceCandidates() {
+        for (ICECandidate candidate : this.remoteIceCandidates.values()) {
+            String ip = candidate.getIpAddress();
+            int port = candidate.getPort();
+            String ice = Ice.createMessage(getaParty()+"/"+getaPartyDeviceId(),
+                    getbParty()+"/"+getbPartyDeviceId(),this.getUniqueId(),
+                    ip, port);
+            Payload payload= new Payload(UUIDGen.getNextAsStr(),ice, TransportPacket.Payload);
+            payload.getMetadata().put("useRest", true);
+            this.getConnector().sendMsgToConnector(payload);
+        }
     }
 
     public void sendSdp() {

@@ -1,13 +1,20 @@
 package com.tb.calling;
 
 public class ICECandidate {
+    public String getId() {
+        return id;
+    }
+
+    private String id;
     private String ipAddress;
     private int port;
     private CandidateType candidateType;
     private TransportProtocol transportProtocol;
 
     // Constructor
-    public ICECandidate(String ipAddress, int port, CandidateType candidateType, TransportProtocol transportProtocol) {
+    public ICECandidate(String id, String ipAddress, int port,
+                        CandidateType candidateType, TransportProtocol transportProtocol) {
+        this.id=id;
         this.ipAddress = ipAddress;
         this.port = port;
         this.candidateType = candidateType;

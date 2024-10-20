@@ -2,10 +2,11 @@ package com.tb.calling;
 
 
 import com.tb.common.eventDriven.Connector;
-import com.tb.common.eventDriven.RequestAndResponse.Payload;
 import com.tb.common.eventDriven.TransportListener;
 
 import java.io.IOException;
+import java.util.HashMap;
+
 public abstract class AbstractCallLeg implements CallLeg, TransportListener {
     public CallState getCallState() {
         return callState;
@@ -16,15 +17,16 @@ public abstract class AbstractCallLeg implements CallLeg, TransportListener {
     }
 
     public CallState callState;
-    public ICECandidate getRemoteIce() {
-        return remoteIce;
+    protected final HashMap<String, ICECandidate> remoteIceCandidates= new HashMap<>();
+
+    public ICECandidate getRemoteIceCandidate(String id) {
+        return this.remoteIceCandidates.get(id);
     }
 
-    public void setRemoteIce(ICECandidate remoteIce) {
-        this.remoteIce = remoteIce;
+    public void addRemoteIceCandidate(ICECandidate remoteIce) {
+        this.remoteIceCandidates.put(remoteIce.getId(),remoteIce);
     }
 
-    ICECandidate remoteIce;
     public Connector getConnector() {
         return connector;
     }
