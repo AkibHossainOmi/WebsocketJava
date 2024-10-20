@@ -6,7 +6,7 @@ import com.tb.common.uniqueIdGenerator.ShortIdGenerator;
 public class Ice {
     public static String createMessage( String apartyWithId, String bpartyWithId, String id, String deviceIp, int port) {
 
-
+        String shortId=ShortIdGenerator.getNext();
         // Construct the XML payload
         String xmlPayload = String.format(
                 """
@@ -19,7 +19,7 @@ public class Ice {
                                 </content>
                             </jingle>
                         </iq>
-                        """, apartyWithId, bpartyWithId, ShortIdGenerator.getNext()
+                        """, apartyWithId, bpartyWithId, shortId
                 , id, deviceIp,port);
         return xmlPayload;
     }

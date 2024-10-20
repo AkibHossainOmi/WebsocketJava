@@ -121,30 +121,32 @@ public class VertoCallLeg extends AbstractCallLeg {
     public void onTransportMessage(Payload data) {
         String msg = data.getData();
         CallMsgType callMsgType = getCallMsgType(msg);
-        switch (callMsgType){
-            case TRYING -> {}
-            case RINGING -> {
-                if (this.callState==CallState.SESSION_START){
-                    this.callState=CallState.RINGING;
+        if(callMsgType!=null){
+            switch (callMsgType){
+                case TRYING -> {}
+                case RINGING -> {
+                    if (this.callState==CallState.SESSION_START){
+                        this.callState=CallState.RINGING;
+                    }
+                    String ipPort=extractSdpIpAndPort(msg);
+                    String[] tempArr=ipPort.split(":");
+                    int port = Integer.parseInt(tempArr[1]);
+                    if (port<=0)
+                        throw new RuntimeException("Media Port must be >0 ");
+                    ICECandidate candidate= new ICECandidate(tempArr[0],
+                            port,CandidateType.HOST,TransportProtocol.UDP);
+                    if (this.callState==CallState.RINGING) {
+                        this.callState=CallState.RINGING;
+                        this.jingleCall.setRemoteIce(candidate);
+                        this.jingleCall.sendSdp();
+                        this.jingleCall.sendIce();
+                    }
                 }
-                String ipPort=extractSdpIpAndPort(msg);
-                String[] tempArr=ipPort.split(":");
-                int port = Integer.parseInt(tempArr[1]);
-                if (port<=0)
-                    throw new RuntimeException("Media Port must be >0 ");
-                ICECandidate candidate= new ICECandidate(tempArr[0],
-                        port,CandidateType.HOST,TransportProtocol.UDP);
-                if (this.callState==CallState.RINGING) {
-                    this.callState=CallState.RINGING;
-                    this.jingleCall.setRemoteIce(candidate);
-                    this.jingleCall.sendSdp();
-                    this.jingleCall.sendIce();
-                }
-            }
-            case ANSWER -> {}
-            case HANGUP -> {}
-            default -> {
+                case ANSWER -> {}
+                case HANGUP -> {}
+                default -> {
 
+                }
             }
         }
 
