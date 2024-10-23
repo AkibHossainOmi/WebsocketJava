@@ -42,6 +42,16 @@ public abstract class AbstractCallLeg implements CallLeg, TransportListener {
     }
 
     String sdp;
+
+    public String getPriorityId() {
+        return priorityId;
+    }
+
+    public void setPriorityId(String priorityId) {
+        this.priorityId = priorityId;
+    }
+
+    private String priorityId;
     public void setUniqueId(String uniqueId) {
         this.uniqueId = uniqueId;
     }

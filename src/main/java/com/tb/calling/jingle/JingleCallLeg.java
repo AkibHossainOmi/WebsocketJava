@@ -16,6 +16,7 @@ import com.tb.common.uniqueIdGenerator.ShortIdGenerator;
 import java.io.IOException;
 
 public class JingleCallLeg extends AbstractCallLeg {
+    SDPMessageFactory sdpMessageFactory;
     VertoCallLeg vertoCall;
     MultiThreadedRequestHandler multiThreadedRequestHandler;
     public JingleConnector getJingleConnector() {
@@ -39,6 +40,7 @@ public class JingleCallLeg extends AbstractCallLeg {
         this.jingleConnector=connector;
         this.multiThreadedRequestHandler =
                 new MultiThreadedRequestHandler(this.getJingleConnector().restTransport);
+
     }
     @Override
     public void onStart(Object message) {
@@ -122,6 +124,9 @@ public class JingleCallLeg extends AbstractCallLeg {
                     .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "to=",","));
 
             this.setbPartyDeviceId(this.jingleConnector.xmppSettings.deviceId);
+            this.sdpMessageFactory= new SDPMessageFactory("TB_CUSTOM_SESSION","2O8L","JRq8hTfMxbwdeL0/KPrGhSdC",
+                    this.getaParty()+"/"+this.getaPartyDeviceId(),
+                    this.getbParty() + "/" + this.getbPartyDeviceId());
             // Extract the ID from the message
             this.setUniqueId(msg.substring(startIndex, endIndex));
             this.accept();
@@ -137,6 +142,12 @@ public class JingleCallLeg extends AbstractCallLeg {
         }
 
         if(msg.contains("transport-info")){//on ice
+
+            String id= StringUtil.Parser
+                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg,"priority=&apos;","&apos;");
+
+            setPriorityId(id);
+
             JingleICE jingleICE = new JingleICE(msg, JingleMsgType.ICE);
             assert(!this.getaParty().isEmpty() && !this.getaPartyDeviceId().isEmpty());
             assert(!this.getbParty().isEmpty() && !this.getbPartyDeviceId().isEmpty());
@@ -176,18 +187,20 @@ public class JingleCallLeg extends AbstractCallLeg {
         for (ICECandidate candidate : this.remoteIceCandidates.values()) {
             String ip = candidate.getIpAddress();
             int port = candidate.getPort();
-            String ice = Ice.createMessage(getaParty()+"/"+getaPartyDeviceId(),
+            /*String ice = ICE1.createMessage(getaParty()+"/"+getaPartyDeviceId(),
                     getbParty()+"/"+getbPartyDeviceId(),this.getUniqueId(),
-                    ip, port);
-            Payload payload= new Payload(UUIDGen.getNextAsStr(),ice, TransportPacket.Payload);
+                    ip, port,this.getPriorityId());*/
+            String ice1= this.sdpMessageFactory.createICE1Message();
+            Payload payload= new Payload(UUIDGen.getNextAsStr(),ice1, TransportPacket.Payload);
             payload.getMetadata().put("useRest", true);
             this.getConnector().sendMsgToConnector(payload);
         }
     }
 
     public void sendSdp() {
-        String sdp = SDP.createMessage(getaParty()+"/"+getaPartyDeviceId(),
-                getbParty()+"/"+getbPartyDeviceId(),this.getUniqueId());
+        /*String sdp = SDP.createMessage(getaParty()+"/"+getaPartyDeviceId(),
+                getbParty()+"/"+getbPartyDeviceId(),this.getUniqueId());*/
+        String sdp = this.sdpMessageFactory.createSDPMessage();
         Payload s= new Payload(UUIDGen.getNextAsStr(),sdp, TransportPacket.Payload);
         s.getMetadata().put("useRest", true);
         this.getConnector().sendMsgToConnector(s);
