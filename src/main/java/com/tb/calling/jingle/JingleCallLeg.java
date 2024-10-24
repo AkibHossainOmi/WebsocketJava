@@ -2,18 +2,20 @@ package com.tb.calling.jingle;
 import com.tb.calling.*;
 import com.tb.calling.jingle.msgTemplates.*;
 import com.tb.calling.verto.VertoConnector;
-import com.tb.common.eventDriven.RequestAndResponse.Conversations.JingleICE;
-import com.tb.common.eventDriven.RequestAndResponse.Conversations.JingleSDP;
-import com.tb.common.eventDriven.RequestAndResponse.Conversations.JingleMsgType;
+import com.tb.calling.jingle.ConversationsRequests.JingleICE;
+import com.tb.calling.jingle.ConversationsRequests.JingleSDP;
+import com.tb.calling.jingle.ConversationsRequests.JingleMsgType;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.TransportPacket;
 import com.tb.common.StringUtil;
 import com.tb.common.UUIDGen;
 import com.tb.common.eventDriven.RequestAndResponse.Payload;
 import com.tb.common.eventDriven.RequestAndResponse.MultiThreadedRequestHandler;
 import com.tb.common.uniqueIdGenerator.ShortIdGenerator;
-
+import com.tb.calling.jingle.ConversationsRequests.ProposeResponse;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JingleCallLeg extends AbstractCallLeg {
     SDPMessageFactory sdpMessageFactory;
@@ -33,6 +35,8 @@ public class JingleCallLeg extends AbstractCallLeg {
         this.vertoConnector = vertoConnector;
     }
 
+    final List<JingleICE> jingleIceCandidates = new ArrayList<>();
+
     VertoConnector vertoConnector;
     public JingleCallLeg(JingleConnector connector) {
         super(connector);
@@ -41,6 +45,11 @@ public class JingleCallLeg extends AbstractCallLeg {
         this.multiThreadedRequestHandler =
                 new MultiThreadedRequestHandler(this.getJingleConnector().restTransport);
 
+    }
+    public void sendJingleIceResults(){
+        for (JingleICE jingleIceCandidate : jingleIceCandidates) {
+            this.multiThreadedRequestHandler.sendResponse(jingleIceCandidate);
+        }
     }
     @Override
     public void onStart(Object message) {
@@ -114,73 +123,87 @@ public class JingleCallLeg extends AbstractCallLeg {
             int startIndex = msg.indexOf("id=jm-propose-") + "id=jm-propose-".length();
             int endIndex = msg.indexOf(",type=chat");
 
-            String aPartyWithDevice= StringUtil.Parser
-                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "from=",",");
-            String[] tempArr=aPartyWithDevice.split("/");
+            String aPartyWithDevice = StringUtil.Parser
+                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "from=", ",");
+            String[] tempArr = aPartyWithDevice.split("/");
             this.setaParty(tempArr[0]);
             this.setaPartyDeviceId(tempArr[1]);
 
             this.setbParty(StringUtil.Parser
-                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "to=",","));
+                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "to=", ","));
 
             this.setbPartyDeviceId(this.jingleConnector.xmppSettings.deviceId);
-            this.sdpMessageFactory= new SDPMessageFactory("TB_CUSTOM_SESSION","2O8L","JRq8hTfMxbwdeL0/KPrGhSdC",
-                    this.getaParty()+"/"+this.getaPartyDeviceId(),
+            this.sdpMessageFactory = new SDPMessageFactory("TB_CUSTOM_SESSION", "2O8L", "JRq8hTfMxbwdeL0/KPrGhSdC",
+                    this.getaParty() + "/" + this.getaPartyDeviceId(),
                     this.getbParty() + "/" + this.getbPartyDeviceId());
             // Extract the ID from the message
             this.setUniqueId(msg.substring(startIndex, endIndex));
+            this.ringing();
+            this.proposeResponse(msg);
             this.accept();
             this.proceed();
         }
-        if(msg.contains("session-initiate")){
-            JingleSDP jingleSDP= new JingleSDP(msg, JingleMsgType.SDP);
-            assert(!this.getaParty().isEmpty() && !this.getaPartyDeviceId().isEmpty());
-            assert(!this.getbParty().isEmpty() && !this.getbPartyDeviceId().isEmpty());
-            jingleSDP.getMetadata().put("bParty",this.getbParty()+"/" + this.getbPartyDeviceId());
-            jingleSDP.getMetadata().put("aParty",this.getaParty()+"/" + this.getaPartyDeviceId());
-            this.multiThreadedRequestHandler.dispatch(jingleSDP);
+        if (msg.contains("session-initiate")) {
+            JingleSDP jingleSDP = new JingleSDP(msg, JingleMsgType.SDP);
+            assert (!this.getaParty().isEmpty() && !this.getaPartyDeviceId().isEmpty());
+            assert (!this.getbParty().isEmpty() && !this.getbPartyDeviceId().isEmpty());
+            jingleSDP.getMetadata().put("bParty", this.getbParty() + "/" + this.getbPartyDeviceId());
+            jingleSDP.getMetadata().put("aParty", this.getaParty() + "/" + this.getaPartyDeviceId());
+            this.multiThreadedRequestHandler.sendResponse(jingleSDP);
         }
 
-        if(msg.contains("transport-info")){//on ice
+        if (msg.contains("transport-info")) {//on ice
 
-            String id= StringUtil.Parser
-                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg,"priority=&apos;","&apos;");
+            String id = StringUtil.Parser
+                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "priority=&apos;", "&apos;");
 
             setPriorityId(id);
 
             JingleICE jingleICE = new JingleICE(msg, JingleMsgType.ICE);
-            assert(!this.getaParty().isEmpty() && !this.getaPartyDeviceId().isEmpty());
-            assert(!this.getbParty().isEmpty() && !this.getbPartyDeviceId().isEmpty());
-            jingleICE.getMetadata().put("bParty",this.getbParty()+"/" + this.getbPartyDeviceId());
-            jingleICE.getMetadata().put("aParty",this.getaParty()+"/" + this.getaPartyDeviceId());
-            this.multiThreadedRequestHandler.dispatch(jingleICE);
-            if(this.callState==CallState.SESSION_START){
-                this.callState=CallState.CALLER_SDP_RECEIVED;
+            assert (!this.getaParty().isEmpty() && !this.getaPartyDeviceId().isEmpty());
+            assert (!this.getbParty().isEmpty() && !this.getbPartyDeviceId().isEmpty());
+            jingleICE.getMetadata().put("bParty", this.getbParty() + "/" + this.getbPartyDeviceId());
+            jingleICE.getMetadata().put("aParty", this.getaParty() + "/" + this.getaPartyDeviceId());
+            this.jingleIceCandidates.add(jingleICE);
+            if (this.callState == CallState.SESSION_START) {
+                this.callState = CallState.CALLER_SDP_RECEIVED;
             }
-            if(this.callState==CallState.CALLER_SDP_RECEIVED){
+            if (this.callState == CallState.CALLER_SDP_RECEIVED) {
                 int portIndex = msg.indexOf("port=&apos;") + "port=&apos;".length();
-                String subStr= msg.substring(portIndex);
-                int port= Integer.parseInt(subStr.split("&")[0]);
-                if (port<=0)
+                String subStr = msg.substring(portIndex);
+                int port = Integer.parseInt(subStr.split("&")[0]);
+                if (port <= 0)
                     throw new RuntimeException("Media Port must be >0 ");
                 int ipIndex = msg.indexOf("ip=&apos;") + "ip=&apos;".length();
-                subStr= msg.substring(ipIndex);
-                String ip= subStr.split("&")[0];
+                subStr = msg.substring(ipIndex);
+                String ip = subStr.split("&")[0];
 
-                ICECandidate candidate= new ICECandidate(ShortIdGenerator.getNext(), ip,
+                ICECandidate candidate = new ICECandidate(ShortIdGenerator.getNext(), ip,
                         port, CandidateType.HOST, TransportProtocol.UDP);
-                this.vertoCall= new VertoCallLeg(this.vertoConnector);
+                this.vertoCall = new VertoCallLeg(this.vertoConnector);
                 this.vertoCall.setUniqueId(UUIDGen.getNextAsStr());
                 this.vertoCall.setaParty("09646888888");
                 this.vertoCall.setbParty("01754105098");
                 this.vertoCall.addRemoteIceCandidate(candidate);
                 this.vertoCall.getConnector().addPublicListener(this.vertoCall);
-                this.vertoCall.setJingleCall(this);
+                this.vertoCall.setJingleLeg(this);
                 this.vertoCall.startSession();
-                this.callState=CallState.WAITING_RINGING;
+                this.callState = CallState.WAITING_RINGING;
             }
         }
+    }
 
+    private void proposeResponse(String msg) {
+        String id = StringUtil.Parser
+                .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "id=",
+                        "readToEndOfStr");
+        ProposeResponse proposeResponse =
+                new ProposeResponse(msg, JingleMsgType.PROPOSE_RESPONSE);
+        assert (!this.getaParty().isEmpty() && !this.getaPartyDeviceId().isEmpty());
+        assert (!this.getbParty().isEmpty() && !this.getbPartyDeviceId().isEmpty());
+        proposeResponse.getMetadata().put("bParty", this.getbParty() + "/" + this.getbPartyDeviceId());
+        proposeResponse.getMetadata().put("aParty", this.getaParty() + "/" + this.getaPartyDeviceId());
+        this.multiThreadedRequestHandler.sendResponse(proposeResponse);
     }
 
     public void sendIceCandidates() {
@@ -221,6 +244,23 @@ public class JingleCallLeg extends AbstractCallLeg {
         p.getMetadata().put("useRest", true);
         this.getConnector().sendMsgToConnector(p);
     }
+
+    public void ringing() {
+        // Call Accept class and pass extractedId
+        String ringing= Ringing.createMessage( getbParty()+"/"+getbPartyDeviceId(), getaParty()+"/"+getaPartyDeviceId(), this.getUniqueId());
+        Payload p= new Payload(UUIDGen.getNextAsStr(),ringing, TransportPacket.Payload);
+        p.getMetadata().put("useRest", true);
+        this.getConnector().sendMsgToConnector(p);
+    }
+
+//    public void proposeResponse() {
+//        // Call Accept class and pass extractedId
+//        String proposeResponse= ProposeResponse.createMessage( getbParty()+"/"+getbPartyDeviceId(), getbParty(), this.getUniqueId());
+//        Payload p= new Payload(UUIDGen.getNextAsStr(),proposeResponse, TransportPacket.Payload);
+//        p.getMetadata().put("useRest", true);
+//        this.getConnector().sendMsgToConnector(p);
+//        this.multiThreadedRequestHandler.sendResponse(jingleSDP);
+//    }
 
     @Override
     public void onTransportError(Payload payload) {

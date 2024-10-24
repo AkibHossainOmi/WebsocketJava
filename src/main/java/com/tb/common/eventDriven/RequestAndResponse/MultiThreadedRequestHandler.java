@@ -28,7 +28,7 @@ public class MultiThreadedRequestHandler {
     }
 
     // Method to handle incoming requests and dispatch them asynchronously
-    public void dispatch(com.tb.common.eventDriven.RequestAndResponse.Request request) {
+    public void sendResponse(com.tb.common.eventDriven.RequestAndResponse.Request request) {
         // Dispatch the request asynchronously by submitting it to the ExecutorService
         executorService.submit(() -> {
             try {

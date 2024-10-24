@@ -34,9 +34,7 @@ public class SDP {
                                 <rtcp-mux/>
                             </description>
                             <transport ufrag="%s" xmlns="urn:xmpp:jingle:transports:ice-udp:1" pwd="%s">
-                                <fingerprint xmlns="urn:xmpp:jingle:apps:dtls:0" hash="sha-256" setup="active">
-                                    36:83:11:24:F7:72:3C:8F:FF:F8:7F:4E:52:01:94:6F:40:47:AB:FA:9D:C8:85:E1:AA:3C:CC:10:93:8F:3F:7A
-                                </fingerprint>
+                                <fingerprint xmlns="urn:xmpp:jingle:apps:dtls:0" hash="sha-256" setup="active">36:83:11:24:F7:72:3C:8F:FF:F8:7F:4E:52:01:94:6F:40:47:AB:FA:9D:C8:85:E1:AA:3C:CC:10:93:8F:3F:7A</fingerprint>
                                 <trickle xmlns="http://gultsch.de/xmpp/drafts/jingle/transports/ice-udp/option"/>
                                 <renomination xmlns="http://gultsch.de/xmpp/drafts/jingle/transports/ice-udp/option"/>
                             </transport>

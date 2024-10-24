@@ -1,4 +1,4 @@
-package com.tb.common.eventDriven.RequestAndResponse.Conversations;
+package com.tb.calling.jingle.ConversationsRequests;
 
 import com.tb.calling.jingle.msgTemplates.ICEResponse;
 import com.tb.common.StringUtil;

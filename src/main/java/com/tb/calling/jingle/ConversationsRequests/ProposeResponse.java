@@ -1,16 +1,16 @@
-package com.tb.common.eventDriven.RequestAndResponse.Conversations;
+package com.tb.calling.jingle.ConversationsRequests;
 
 import com.tb.calling.jingle.msgTemplates.SDPResponse;
 import com.tb.common.StringUtil;
-import com.tb.common.eventDriven.RequestAndResponse.Request;
-import com.tb.common.eventDriven.RequestAndResponse.PayloadType;
 import com.tb.common.eventDriven.RequestAndResponse.Payload;
+import com.tb.common.eventDriven.RequestAndResponse.PayloadType;
+import com.tb.common.eventDriven.RequestAndResponse.Request;
 
-public class JingleSDP extends Request {
-    public JingleSDP(String data, PayloadType payloadType) {
+public class ProposeResponse extends Request {
+    public ProposeResponse(String data, PayloadType payloadType) {
         super(data, payloadType);
         String id= StringUtil.Parser
-                .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(data,"id='","'");
+                .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(data,"id=",",");
         this.setId(id);
     }
     @Override
@@ -18,7 +18,7 @@ public class JingleSDP extends Request {
         String aParty = (String)this.getMetadata().get("aParty");
         String bParty = (String)this.getMetadata().get("bParty");
         assert(aParty!=null && bParty!=null);
-        return new Payload(this.getId(),SDPResponse.createMessage(aParty,bParty,getId()),
+        return new Payload(this.getId(), com.tb.calling.jingle.msgTemplates.ProposeResponse.createMessage(bParty,aParty,getId()),
                 JingleMsgType.ICE_RESPONSE);
     }
 }

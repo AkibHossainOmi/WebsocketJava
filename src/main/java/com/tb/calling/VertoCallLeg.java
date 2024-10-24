@@ -16,15 +16,15 @@ import com.tb.common.eventDriven.RequestAndResponse.Payload;
 public class VertoCallLeg extends AbstractCallLeg {
     UniqueIntGenerator intGenerator= new UniqueIntGenerator(0);
 
-    public JingleCallLeg getJingleCall() {
-        return jingleCall;
+    public JingleCallLeg getJingleLeg() {
+        return jingleLeg;
     }
 
-    public void setJingleCall(JingleCallLeg jingleCall) {
-        this.jingleCall = jingleCall;
+    public void setJingleLeg(JingleCallLeg jingleLeg) {
+        this.jingleLeg = jingleLeg;
     }
 
-    JingleCallLeg jingleCall;
+    JingleCallLeg jingleLeg;
     public VertoCallLeg(Connector connector) {
         super(connector);
     }
@@ -144,10 +144,11 @@ public class VertoCallLeg extends AbstractCallLeg {
                             port-1,CandidateType.HOST,TransportProtocol.UDP);
                     if (this.callState==CallState.RINGING) {
                         this.callState=CallState.RINGING;
-                        this.jingleCall.sendSdp();
-                        this.jingleCall.addRemoteIceCandidate(candidate1);
-                        this.jingleCall.addRemoteIceCandidate(candidate2);
-                        this.jingleCall.sendIceCandidates();
+                        this.jingleLeg.sendSdp();
+                        this.jingleLeg.addRemoteIceCandidate(candidate1);
+                        this.jingleLeg.addRemoteIceCandidate(candidate2);
+                        this.jingleLeg.sendIceCandidates();
+                        this.jingleLeg.sendJingleIceResults();
                     }
                 }
                 case ANSWER -> {}
