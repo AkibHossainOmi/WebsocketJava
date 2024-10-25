@@ -1,4 +1,4 @@
-package com.tb.calling;
+package com.tb.common.eventDriven.RequestAndResponse.Enums;
 public enum CallState {
     IDLE,
     SESSION_START,

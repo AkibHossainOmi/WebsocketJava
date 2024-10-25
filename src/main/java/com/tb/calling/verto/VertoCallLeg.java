@@ -1,7 +1,8 @@
-package com.tb.calling;
+package com.tb.calling.verto;
 
+import com.tb.calling.*;
 import com.tb.calling.jingle.JingleCallLeg;
-import com.tb.common.eventDriven.RequestAndResponse.Enums.VertoPacket;
+import com.tb.common.eventDriven.RequestAndResponse.Enums.*;
 import com.tb.common.eventDriven.Connector;
 import com.tb.calling.verto.msgTemplates.StartCall;
 import com.tb.common.uniqueIdGenerator.ShortIdGenerator;
@@ -139,7 +140,7 @@ public class VertoCallLeg extends AbstractCallLeg {
                     if (port<=0)
                         throw new RuntimeException("Media Port must be >0 ");
                     ICECandidate candidate1= new ICECandidate(ShortIdGenerator.getNext(), tempArr[0],
-                            port,CandidateType.HOST,TransportProtocol.UDP);
+                            port, CandidateType.HOST, TransportProtocol.UDP);
                     ICECandidate candidate2= new ICECandidate(ShortIdGenerator.getNext(), tempArr[0],
                             port-1,CandidateType.HOST,TransportProtocol.UDP);
                     if (this.callState==CallState.RINGING) {

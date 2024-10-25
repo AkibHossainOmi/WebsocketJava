@@ -1,4 +1,4 @@
-package com.tb.calling;
+package com.tb.common.eventDriven.RequestAndResponse.Enums;
 
 public enum CandidateType {
     HOST("host"),

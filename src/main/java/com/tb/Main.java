@@ -1,6 +1,5 @@
 package com.tb;
 
-import com.tb.calling.VertoCallLeg;
 import com.tb.calling.jingle.JingleCallLeg;
 import com.tb.calling.jingle.JingleConnector;
 import com.tb.common.WebSocketType;
@@ -14,9 +13,7 @@ import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jxmpp.stringprep.XmppStringprepException;
 
 
-import java.util.Arrays;
 import java.util.Scanner;
-import java.util.UUID;
 
 public class Main {
 

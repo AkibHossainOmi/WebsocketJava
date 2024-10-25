@@ -1,13 +1,18 @@
 package com.tb.calling.jingle;
 import com.tb.calling.*;
 import com.tb.calling.jingle.msgTemplates.*;
+import com.tb.calling.verto.VertoCallLeg;
 import com.tb.calling.verto.VertoConnector;
 import com.tb.calling.jingle.ConversationsRequests.JingleICE;
 import com.tb.calling.jingle.ConversationsRequests.JingleSDP;
 import com.tb.calling.jingle.ConversationsRequests.JingleMsgType;
+import com.tb.common.Delay;
+import com.tb.common.eventDriven.RequestAndResponse.Enums.CallState;
+import com.tb.common.eventDriven.RequestAndResponse.Enums.CandidateType;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.TransportPacket;
 import com.tb.common.StringUtil;
 import com.tb.common.UUIDGen;
+import com.tb.common.eventDriven.RequestAndResponse.Enums.TransportProtocol;
 import com.tb.common.eventDriven.RequestAndResponse.Payload;
 import com.tb.common.eventDriven.RequestAndResponse.MultiThreadedRequestHandler;
 import com.tb.common.uniqueIdGenerator.ShortIdGenerator;
@@ -118,31 +123,7 @@ public class JingleCallLeg extends AbstractCallLeg {
     @Override
     public void onTransportMessage(Payload data) {
         String msg = data.getData();
-        if (msg.contains("jm-propose")) {
-            // Find the positions of the relevant substrings
-            int startIndex = msg.indexOf("id=jm-propose-") + "id=jm-propose-".length();
-            int endIndex = msg.indexOf(",type=chat");
 
-            String aPartyWithDevice = StringUtil.Parser
-                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "from=", ",");
-            String[] tempArr = aPartyWithDevice.split("/");
-            this.setaParty(tempArr[0]);
-            this.setaPartyDeviceId(tempArr[1]);
-
-            this.setbParty(StringUtil.Parser
-                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "to=", ","));
-
-            this.setbPartyDeviceId(this.jingleConnector.xmppSettings.deviceId);
-            this.sdpMessageFactory = new SDPMessageFactory("TB_CUSTOM_SESSION", "2O8L", "JRq8hTfMxbwdeL0/KPrGhSdC",
-                    this.getaParty() + "/" + this.getaPartyDeviceId(),
-                    this.getbParty() + "/" + this.getbPartyDeviceId());
-            // Extract the ID from the message
-            this.setUniqueId(msg.substring(startIndex, endIndex));
-            this.ringing();
-            this.proposeResponse(msg);
-            this.accept();
-            this.proceed();
-        }
         if (msg.contains("session-initiate")) {
             JingleSDP jingleSDP = new JingleSDP(msg, JingleMsgType.SDP);
             assert (!this.getaParty().isEmpty() && !this.getaPartyDeviceId().isEmpty());
