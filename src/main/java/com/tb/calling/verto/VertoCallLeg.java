@@ -1,6 +1,7 @@
 package com.tb.calling.verto;
 
-import com.tb.calling.*;
+import com.tb.calling.base.AbstractCallLeg;
+import com.tb.calling.base.ICECandidate;
 import com.tb.calling.jingle.JingleCallLeg;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.*;
 import com.tb.common.eventDriven.Connector;
@@ -126,9 +127,9 @@ public class VertoCallLeg extends AbstractCallLeg {
     @Override
     public void onTransportMessage(Payload data) {
         String msg = data.getData();
-        CallMsgType callMsgType = getCallMsgType(msg);
-        if(callMsgType!=null){
-            switch (callMsgType){
+        CallEventType callEventType = getCallMsgType(msg);
+        if(callEventType !=null){
+            switch (callEventType){
                 case TRYING -> {}
                 case RINGING -> {
                     if (this.callState==CallState.SESSION_START){
@@ -172,18 +173,18 @@ public class VertoCallLeg extends AbstractCallLeg {
 
     }
 
-    public CallMsgType getCallMsgType(String msg){
+    public CallEventType getCallMsgType(String msg){
         if(msg.contains("CALL CREATED")){
-            return CallMsgType.TRYING;
+            return CallEventType.TRYING;
         }
         else if(msg.contains("verto.media") ){
-            return CallMsgType.RINGING;
+            return CallEventType.RINGING;
         }
         else if(msg.contains("verto.answer")){
-            return CallMsgType.ANSWER;
+            return CallEventType.ANSWER;
         }
         else if(msg.contains("verto.bye")){
-            return CallMsgType.HANGUP;
+            return CallEventType.HANGUP;
         }
         else return null;
     }

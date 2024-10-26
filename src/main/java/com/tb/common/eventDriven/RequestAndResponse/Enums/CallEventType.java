@@ -1,9 +1,13 @@
 package com.tb.common.eventDriven.RequestAndResponse.Enums;
 
-public enum CallMsgType {
+public enum CallEventType {
     SESSION_START,
     TRYING,
     RINGING,
     ANSWER,
-    HANGUP
+    HANGUP,
+    SDP,
+    ICE_CANDIDATE,
+    ICE_ACK,
+    UNKNOWN
 }

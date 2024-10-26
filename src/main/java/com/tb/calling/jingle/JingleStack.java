@@ -1,9 +1,8 @@
 package com.tb.calling.jingle;
 
-import com.tb.calling.AbstractCallLeg;
+import com.tb.calling.base.AbstractCallLeg;
 import com.tb.transport.rest.RestSettings;
 import com.tb.transport.xmpp.XmppSettings;
-import org.jivesoftware.smack.ConnectionConfiguration;
 
 import java.util.Hashtable;
 

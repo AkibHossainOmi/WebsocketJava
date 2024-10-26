@@ -1,7 +1,7 @@
 package com.tb.calling.jingle;
 
-import com.tb.calling.AbstractCallLeg;
-import com.tb.calling.jingle.JingleConnector;
+import com.tb.calling.base.AbstractCallLeg;
+
 import java.util.HashMap;
 
 public class JingleChannelDriver {

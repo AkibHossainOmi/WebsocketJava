@@ -1,10 +1,8 @@
 package com.tb.calling.jingle;
-import com.tb.calling.jingle.ConversationsRequests.JingleMsgType;
-import com.tb.calling.jingle.ConversationsRequests.JingleSDP;
-import com.tb.common.CallSignalingMessage;
+import com.tb.common.CallEvent;
 import com.tb.common.Delay;
 import com.tb.common.StringUtil;
-import com.tb.common.eventDriven.RequestAndResponse.Enums.CallMsgType;
+import com.tb.common.eventDriven.RequestAndResponse.Enums.CallEventType;
 import com.tb.common.eventDriven.RequestAndResponse.Payload;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,7 +18,8 @@ public class JingleMessageNormalizer {
 
     public void handleIncomingMessage(Payload payload) {
         String rawMessage=payload.getData();
-        CallMsgType messageType = parseMessageType(rawMessage);
+        CallEvent signalingMessage = parseRawMessage(rawMessage);
+        CallEventType messageType=signalingMessage.getEventType();
 
         switch (messageType) {
             case SESSION_START:
@@ -50,29 +49,29 @@ public class JingleMessageNormalizer {
         }
     }
 
-    private CallSignalingMessage parseMessageType(String msg) {
+    private CallEvent parseRawMessage(String msg) {
         if (msg.contains("jm-propose")) {
             ProposeParams proposeParams = parseProposeParams(msg);
-            CallSignalingMessage callStartMsg=
-                    new CallSignalingMessage(CallMsgType.SESSION_START,
-                            proposeParams.aParty(), proposeParams.bParty(), proposeParams.sessionID());
-            return callStartMsg;
+            CallEvent propose=
+                    new CallEvent(CallEventType.SESSION_START,proposeParams.sessionID(),msg);
+            return propose;
 
         } else if (msg.contains("session-initiate")) {
-            JingleSDP jingleSDP = new JingleSDP(msg, JingleMsgType.SDP);
-            assert (!this.getaParty().isEmpty() && !this.getaPartyDeviceId().isEmpty());
-            assert (!this.getbParty().isEmpty() && !this.getbPartyDeviceId().isEmpty());
-            jingleSDP.getMetadata().put("bParty", this.getbParty() + "/" + this.getbPartyDeviceId());
-            jingleSDP.getMetadata().put("aParty", this.getaParty() + "/" + this.getaPartyDeviceId());
-            this.multiThreadedRequestHandler.sendResponse(jingleSDP);
-        } else if (msg.contains("ringing")) {
-            return CallMsgType.RINGING;
-        } else if (msg.contains("answer")) {
-            return CallMsgType.ANSWER;
-        } else if (msg.contains("hangup")) {
-            return CallMsgType.HANGUP;
+            String sessionId= StringUtil.Parser.getFirstOccuranceOfParamValueByIndexAndTerminatingStr
+                    (msg,"jingle sid=","xmlns").trim();
+            if (sessionId.isEmpty())
+                throw new RuntimeException("Found empty Session id in jingle SDP");
+            CallEvent sdp= new CallEvent(CallEventType.SDP,sessionId,msg);
+            return sdp;
+        } else if (msg.contains("transport-info")) {
+            String sessionId = StringUtil.Parser
+                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "priority=&apos;", "&apos;");
+            if (sessionId.isEmpty())
+                throw new RuntimeException("Found empty Session id in jingle SDP");
+            CallEvent iceCandidate= new CallEvent(CallEventType.ICE_ACK,sessionId,msg);
+            return iceCandidate;
         }
-        return null; // Or some default value/exception
+        return new CallEvent(CallEventType.UNKNOWN,"",msg);
     }
 
     @NotNull

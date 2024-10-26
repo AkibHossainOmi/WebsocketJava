@@ -9,72 +9,54 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class Logger {
-    private static Logger instance;
-    private LoggerType loggerType = LoggerType.CONSOLE.CONSOLE; // Default writer
-    private PrintWriter fileWriter;
+    private static String logFilePath = ""; // Default log file path is empty
 
-    // Private constructor to prevent instantiation
-    private Logger() {
-        // Initialize the file writer if needed
+    // Prevent instantiation
+    private Logger() {}
+
+    // Set the log file path
+    public static void setLogFilePath(String filePath) {
+        logFilePath = filePath;
     }
 
-    public static Logger getInstance() {
-        if (instance == null) {
-            instance = new Logger();
-        }
-        return instance;
+    // Log a message with a specified severity
+    public static void log(LogSeverity severity, String message) {
+        String logMessage = "[" + severity + "] " + message;
+        System.out.println(logMessage); // Print to console
+        writeToFile(logMessage);
     }
 
-    public void setWriter(LoggerType loggerType) {
-        this.loggerType = loggerType;
-        if (loggerType == LoggerType.FILE.FILE) {
-            try {
-                fileWriter = new PrintWriter(new FileWriter("log.txt", true)); // Append mode
+    // Log an exception with a specified severity
+    public static void log(LogSeverity severity, Exception exception) {
+        String logMessage = "[" + severity + "] " + exception.getMessage();
+        System.out.println(logMessage); // Print to console
+        writeToFile(logMessage);
+        exception.printStackTrace(); // Print stack trace to console
+    }
+
+    // Log a message along with an exception
+    public static void log(LogSeverity severity, String message, Exception exception) {
+        String logMessage = "[" + severity + "] " + message;
+        System.out.println(logMessage); // Print to console
+        writeToFile(logMessage);
+        exception.printStackTrace(); // Print stack trace to console
+    }
+
+    // Write log message to file if a file path is set
+    private static void writeToFile(String logMessage) {
+        if (logFilePath != null && !logFilePath.isEmpty()) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFilePath, true))) {
+                writer.write(logMessage);
+                writer.newLine(); // Add a new line
             } catch (IOException e) {
-                e.printStackTrace();
+                System.err.println("Failed to write log to file: " + e.getMessage());
             }
         }
     }
-
-    public void log(String message, LogSeverity severity) {
-        String formattedMessage = formatMessage(message, severity);
-        writeLog(formattedMessage);
-    }
-
-    public void log(Exception exception, LogSeverity severity) {
-        String stackTrace = getStackTrace(exception);
-        String formattedMessage = formatMessage(stackTrace, severity);
-        writeLog(formattedMessage);
-    }
-
-    private void writeLog(String message) {
-        switch (loggerType) {
-            case CONSOLE:
-                System.out.println(message);
-                break;
-            case SYSLOG:
-                // Implement syslog writing logic here
-                break;
-            case FILE:
-                if (fileWriter != null) {
-                    fileWriter.println(message);
-                    fileWriter.flush(); // Ensure it's written to the file
-                }
-                break;
-        }
-    }
-
-    private String formatMessage(String message, LogSeverity severity) {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        return String.format("[%s] [%s] %s", timestamp, severity, message);
-    }
-
-    private String getStackTrace(Exception exception) {
-        StringBuilder stackTrace = new StringBuilder();
-        for (StackTraceElement element : exception.getStackTrace()) {
-            stackTrace.append(element.toString()).append("\n");
-        }
-        return stackTrace.toString();
-    }
 }
+

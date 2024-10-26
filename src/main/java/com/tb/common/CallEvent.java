@@ -1,9 +1,33 @@
 package com.tb.common;
 
-import com.tb.common.eventDriven.RequestAndResponse.Enums.CallMsgType;
+import com.tb.common.eventDriven.RequestAndResponse.Enums.CallEventType;
 
-public class CallSignalingMessage {
-    CallMsgType callMsgType;
+import java.util.HashMap;
+
+public class CallEvent {
+    public CallEventType getEventType() {
+        return messageType;
+    }
+
+    private final CallEventType messageType;
+    private final String sessionId;
+
+    public String getRawData() {
+        return rawData;
+    }
+
+    private final String rawData;
+
+    public HashMap<String, Object> getMetaData() {
+        return metaData;
+    }
+
+    private final HashMap<String, Object> metaData= new HashMap<>();
+    public CallEvent(CallEventType messageType, String sessionId, String rawData) {
+        this.messageType = messageType;
+        this.sessionId = sessionId;
+        this.rawData = rawData;
+    }
     private String aParty;                // The identifier for party A (caller)
     private String bParty;                // The identifier for party B (callee)
 
@@ -25,26 +49,18 @@ public class CallSignalingMessage {
 
     private String aPartyDeviceId;
     private String bPartyDeviceId;
-    private String sessionId;             // Unique identifier for the session
     private String sourceDomain;          // Domain of the source party
     private String destinationDomain;     // Domain of the destination party
     private String codec;                 // Codec used for the call (e.g., "opus", "G711")
     private int pTime;                    // Packet time for the media stream
     private String callId;                // Unique identifier for the call
-    private String messageType;           // Type of message (e.g., "INVITE", "BYE", "MESSAGE")
     private String timestamp;              // Timestamp of the message
     private String correlationId;         // ID for tracking related messages
-    private String content;                // Content of the message for SMS
     private String mediaType;              // Type of media (e.g., "audio", "video")
     private String status;                 // Status of the call (e.g., "ringing", "answered", "ended")
 
     // Constructor
-    public CallSignalingMessage(CallMsgType callMsgType, String aParty, String bParty, String sessionId) {
-        this.callMsgType=callMsgType;
-        this.aParty = aParty;
-        this.bParty = bParty;
-        this.sessionId = sessionId;
-    }
+
 
     // Getters and Setters
     public String getaParty() {
@@ -65,10 +81,6 @@ public class CallSignalingMessage {
 
     public String getSessionId() {
         return sessionId;
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
     }
 
     public String getSourceDomain() {
@@ -111,14 +123,6 @@ public class CallSignalingMessage {
         this.callId = callId;
     }
 
-    public String getMessageType() {
-        return messageType;
-    }
-
-    public void setMessageType(String messageType) {
-        this.messageType = messageType;
-    }
-
     public String getTimestamp() {
         return timestamp;
     }
@@ -134,15 +138,6 @@ public class CallSignalingMessage {
     public void setCorrelationId(String correlationId) {
         this.correlationId = correlationId;
     }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
     public String getMediaType() {
         return mediaType;
     }

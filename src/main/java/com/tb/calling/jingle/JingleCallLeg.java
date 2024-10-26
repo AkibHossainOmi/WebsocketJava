@@ -1,12 +1,11 @@
 package com.tb.calling.jingle;
-import com.tb.calling.*;
+import com.tb.calling.base.AbstractCallLeg;
+import com.tb.calling.base.ICECandidate;
 import com.tb.calling.jingle.msgTemplates.*;
 import com.tb.calling.verto.VertoCallLeg;
 import com.tb.calling.verto.VertoConnector;
 import com.tb.calling.jingle.ConversationsRequests.JingleICE;
-import com.tb.calling.jingle.ConversationsRequests.JingleSDP;
 import com.tb.calling.jingle.ConversationsRequests.JingleMsgType;
-import com.tb.common.Delay;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.CallState;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.CandidateType;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.TransportPacket;
@@ -18,7 +17,6 @@ import com.tb.common.eventDriven.RequestAndResponse.MultiThreadedRequestHandler;
 import com.tb.common.uniqueIdGenerator.ShortIdGenerator;
 import com.tb.calling.jingle.ConversationsRequests.ProposeResponse;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,50 +55,6 @@ public class JingleCallLeg extends AbstractCallLeg {
         }
     }
     @Override
-    public void onStart(Object message) {
-
-    }
-
-    @Override
-    public void onNewMessage(Object message) throws IOException {
-
-    }
-    @Override
-    public void startSession() {
-
-    }
-
-    @Override
-    public void updateSession() {
-
-    }
-
-    @Override
-    public void disconnect() {
-
-    }
-
-    @Override
-    public void onRing() {
-
-    }
-
-    @Override
-    public void onAnswer() {
-
-    }
-
-    @Override
-    public void startRing() {
-
-    }
-
-    @Override
-    public void answer() {
-
-    }
-
-    @Override
     public String extractSdp(String sdp) {
         return null;
     }
@@ -125,20 +79,13 @@ public class JingleCallLeg extends AbstractCallLeg {
         String msg = data.getData();
 
         if (msg.contains("session-initiate")) {
-            JingleSDP jingleSDP = new JingleSDP(msg, JingleMsgType.SDP);
-            assert (!this.getaParty().isEmpty() && !this.getaPartyDeviceId().isEmpty());
-            assert (!this.getbParty().isEmpty() && !this.getbPartyDeviceId().isEmpty());
-            jingleSDP.getMetadata().put("bParty", this.getbParty() + "/" + this.getbPartyDeviceId());
-            jingleSDP.getMetadata().put("aParty", this.getaParty() + "/" + this.getaPartyDeviceId());
-            this.multiThreadedRequestHandler.sendResponse(jingleSDP);
+
         }
 
         if (msg.contains("transport-info")) {//on ice
 
             String id = StringUtil.Parser
                     .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "priority=&apos;", "&apos;");
-
-            setPriorityId(id);
 
             JingleICE jingleICE = new JingleICE(msg, JingleMsgType.ICE);
             assert (!this.getaParty().isEmpty() && !this.getaPartyDeviceId().isEmpty());
@@ -232,25 +179,6 @@ public class JingleCallLeg extends AbstractCallLeg {
         Payload p= new Payload(UUIDGen.getNextAsStr(),ringing, TransportPacket.Payload);
         p.getMetadata().put("useRest", true);
         this.getConnector().sendMsgToConnector(p);
-    }
-
-//    public void proposeResponse() {
-//        // Call Accept class and pass extractedId
-//        String proposeResponse= ProposeResponse.createMessage( getbParty()+"/"+getbPartyDeviceId(), getbParty(), this.getUniqueId());
-//        Payload p= new Payload(UUIDGen.getNextAsStr(),proposeResponse, TransportPacket.Payload);
-//        p.getMetadata().put("useRest", true);
-//        this.getConnector().sendMsgToConnector(p);
-//        this.multiThreadedRequestHandler.sendResponse(jingleSDP);
-//    }
-
-    @Override
-    public void onTransportError(Payload payload) {
-
-    }
-
-    @Override
-    public void onTransportStatus(Payload payload) {
-
     }
 
 }
