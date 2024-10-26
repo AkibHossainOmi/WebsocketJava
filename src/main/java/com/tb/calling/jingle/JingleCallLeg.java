@@ -1,11 +1,13 @@
 package com.tb.calling.jingle;
 import com.tb.calling.base.AbstractCallLeg;
 import com.tb.calling.base.ICECandidate;
+import com.tb.calling.base.statemachine.Transition;
 import com.tb.calling.jingle.msgTemplates.*;
 import com.tb.calling.verto.VertoCallLeg;
 import com.tb.calling.verto.VertoConnector;
 import com.tb.calling.jingle.ConversationsRequests.JingleICE;
 import com.tb.calling.jingle.ConversationsRequests.JingleMsgType;
+import com.tb.common.CallEvent;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.CallState;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.CandidateType;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.TransportPacket;
@@ -54,6 +56,42 @@ public class JingleCallLeg extends AbstractCallLeg {
             this.multiThreadedRequestHandler.sendResponse(jingleIceCandidate);
         }
     }
+
+    @Override
+    public void startSession() {
+
+    }
+
+    @Override
+    public void updateSession() {
+
+    }
+
+    @Override
+    public void disconnect() {
+
+    }
+
+    @Override
+    public void onRing() {
+
+    }
+
+    @Override
+    public void onAnswer() {
+
+    }
+
+    @Override
+    public void startRing() {
+
+    }
+
+    @Override
+    public void answer() {
+
+    }
+
     @Override
     public String extractSdp(String sdp) {
         return null;
@@ -121,6 +159,16 @@ public class JingleCallLeg extends AbstractCallLeg {
         }
     }
 
+    @Override
+    public void onTransportError(Payload payload) {
+
+    }
+
+    @Override
+    public void onTransportStatus(Payload payload) {
+
+    }
+
     private void proposeResponse(String msg) {
         String id = StringUtil.Parser
                 .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "id=",
@@ -181,4 +229,27 @@ public class JingleCallLeg extends AbstractCallLeg {
         this.getConnector().sendMsgToConnector(p);
     }
 
+    @Override
+    public void onStateChange(Transition transition, CallEvent event) {
+        switch (event.getEventType()) {
+            case SESSION_START -> {
+            }
+            case TRYING -> {
+            }
+            case RINGING -> {
+            }
+            case ANSWER -> {
+            }
+            case HANGUP -> {
+            }
+            case SDP -> {
+            }
+            case ICE_CANDIDATE -> {
+            }
+            case ICE_ACK -> {
+            }
+            case UNKNOWN -> {
+            }
+        }
+    }
 }

@@ -4,5 +4,6 @@ public enum StateMachineType {
     SIGNALING,
     CHARGING,
     UI,
-    SECURITY
+    SECURITY,
+    OTHER
 }
