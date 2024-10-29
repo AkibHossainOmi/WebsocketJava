@@ -5,6 +5,7 @@ import com.tb.calling.verto.VertoConnector;
 import com.tb.calling.jingle.ConversationsRequests.JingleICE;
 import com.tb.calling.jingle.ConversationsRequests.JingleSDP;
 import com.tb.calling.jingle.ConversationsRequests.JingleMsgType;
+import com.tb.common.Delay;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.TransportPacket;
 import com.tb.common.StringUtil;
 import com.tb.common.UUIDGen;
@@ -26,6 +27,12 @@ public class JingleCallLeg extends AbstractCallLeg {
     }
 
     JingleConnector jingleConnector;
+
+    public JingleSdpParamA getJingleSdpParamA() {
+        return jingleSdpParamA;
+    }
+
+    JingleSdpParamA jingleSdpParamA;
 
     public VertoConnector getVertoConnector() {
         return vertoConnector;
@@ -119,6 +126,7 @@ public class JingleCallLeg extends AbstractCallLeg {
     public void onTransportMessage(Payload data) {
         String msg = data.getData();
         if (msg.contains("jm-propose")) {
+            this.callState = CallState.SESSION_START;
             // Find the positions of the relevant substrings
             int startIndex = msg.indexOf("id=jm-propose-") + "id=jm-propose-".length();
             int endIndex = msg.indexOf(",type=chat");
@@ -133,17 +141,19 @@ public class JingleCallLeg extends AbstractCallLeg {
                     .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "to=", ","));
 
             this.setbPartyDeviceId(this.jingleConnector.xmppSettings.deviceId);
-            this.sdpMessageFactory = new SDPMessageFactory("TB_CUSTOM_SESSION", "2O8L", "JRq8hTfMxbwdeL0/KPrGhSdC",
-                    this.getaParty() + "/" + this.getaPartyDeviceId(),
-                    this.getbParty() + "/" + this.getbPartyDeviceId());
+
             // Extract the ID from the message
             this.setUniqueId(msg.substring(startIndex, endIndex));
             this.ringing();
             this.proposeResponse(msg);
+            Delay.sleep(1000);
             this.accept();
             this.proceed();
         }
         if (msg.contains("session-initiate")) {
+
+            jingleSdpParamA = new JingleSdpParamA(msg);
+
             JingleSDP jingleSDP = new JingleSDP(msg, JingleMsgType.SDP);
             assert (!this.getaParty().isEmpty() && !this.getaPartyDeviceId().isEmpty());
             assert (!this.getbParty().isEmpty() && !this.getbPartyDeviceId().isEmpty());
@@ -156,7 +166,6 @@ public class JingleCallLeg extends AbstractCallLeg {
 
             String id = StringUtil.Parser
                     .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "priority=&apos;", "&apos;");
-
             setPriorityId(id);
 
             JingleICE jingleICE = new JingleICE(msg, JingleMsgType.ICE);
@@ -213,17 +222,28 @@ public class JingleCallLeg extends AbstractCallLeg {
             /*String ice = ICE1.createMessage(getaParty()+"/"+getaPartyDeviceId(),
                     getbParty()+"/"+getbPartyDeviceId(),this.getUniqueId(),
                     ip, port,this.getPriorityId());*/
-            String ice1= this.sdpMessageFactory.createICE1Message();
+            String ice1= this.sdpMessageFactory.createICEMessage();
             Payload payload= new Payload(UUIDGen.getNextAsStr(),ice1, TransportPacket.Payload);
             payload.getMetadata().put("useRest", true);
             this.getConnector().sendMsgToConnector(payload);
         }
     }
-
     public void sendSdp() {
+
+        this.sdpMessageFactory = new SDPMessageFactory(this.getbParty() + "/" + this.getbPartyDeviceId(),
+                this.getaParty() + "/" + this.getaPartyDeviceId(),
+                "TB_CUSTOM_SESSION",
+                vertoCall.getVertoSdpParamA().getSsrc(),
+                vertoCall.getVertoSdpParamA().getMsid(),
+                vertoCall.getVertoSdpParamA().getUfrag(),
+                vertoCall.getVertoSdpParamA().getPwd(),
+                vertoCall.getVertoSdpParamA().getFingerprint(),getPriorityId(),
+                vertoCall.getVertoSdpParamA().getIp(),vertoCall.getVertoSdpParamA().getPort());
         /*String sdp = SDP.createMessage(getaParty()+"/"+getaPartyDeviceId(),
                 getbParty()+"/"+getbPartyDeviceId(),this.getUniqueId());*/
         String sdp = this.sdpMessageFactory.createSDPMessage();
+        //String sdp = this.sdpMessageFactory.createSDPWithICEMessage();
+//        String sdp = "Hello SDP";
         Payload s= new Payload(UUIDGen.getNextAsStr(),sdp, TransportPacket.Payload);
         s.getMetadata().put("useRest", true);
         this.getConnector().sendMsgToConnector(s);

@@ -1,12 +1,14 @@
 package com.tb.calling;
 
 import com.tb.calling.jingle.JingleCallLeg;
+import com.tb.calling.verto.VertoSdpParamB;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.VertoPacket;
 import com.tb.common.eventDriven.Connector;
 import com.tb.calling.verto.msgTemplates.StartCall;
 import com.tb.common.uniqueIdGenerator.ShortIdGenerator;
 import com.tb.common.uniqueIdGenerator.UniqueIntGenerator;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
@@ -15,6 +17,12 @@ import java.util.regex.Pattern;
 import com.tb.common.eventDriven.RequestAndResponse.Payload;
 public class VertoCallLeg extends AbstractCallLeg {
     UniqueIntGenerator intGenerator= new UniqueIntGenerator(0);
+
+    public VertoSdpParamB getVertoSdpParamA() {
+        return vertoSdpParamB;
+    }
+
+    private VertoSdpParamB vertoSdpParamB;
 
     public JingleCallLeg getJingleLeg() {
         return jingleLeg;
@@ -45,7 +53,9 @@ public class VertoCallLeg extends AbstractCallLeg {
         Map.Entry<String, ICECandidate> firstEntry= this.remoteIceCandidates.entrySet().iterator().next();
         firstCandidate=firstEntry.getValue();
         String msg =StartCall.createMessage("09646888888",this.getUniqueId(),connector.getSessionId(),intGenerator.getNext()
-        ,firstCandidate.getIpAddress(),firstCandidate.getPort());
+        ,firstCandidate.getIpAddress(),firstCandidate.getPort(),jingleLeg.getJingleSdpParamA().getMsid(),
+                jingleLeg.getJingleSdpParamA().getUfrag(),jingleLeg.getJingleSdpParamA().getPwd(),
+                jingleLeg.getJingleSdpParamA().getFingerprint(),jingleLeg.getJingleSdpParamA().getSsrc());
         connector.sendMsgToConnector(new Payload(this.getUniqueId(),msg, VertoPacket.Invite));
         System.out.println(msg);
         this.callState= CallState.SESSION_START;
@@ -124,17 +134,31 @@ public class VertoCallLeg extends AbstractCallLeg {
 
     @Override
     public void onTransportMessage(Payload data) {
+
+
         String msg = data.getData();
+
         CallMsgType callMsgType = getCallMsgType(msg);
         if(callMsgType!=null){
             switch (callMsgType){
                 case TRYING -> {}
-                case RINGING -> {
+                case RINGING, ANSWER -> {
+                    if (msg.contains("msid-semantic")) {
+                        try {
+                            FileWriter fileWriter= new FileWriter("c:/temp/vertoSdp.txt");
+                            fileWriter.write(msg.replace("\\r\\n", System.lineSeparator()));
+                            fileWriter.close();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
                     if (this.callState==CallState.SESSION_START){
                         this.callState=CallState.RINGING;
                     }
-                    String ipPort=extractSdpIpAndPort(msg);
+                     this.vertoSdpParamB = new VertoSdpParamB(msg);
+                    String ipPort = extractSdpIpAndPort(msg);
                     String[] tempArr=ipPort.split(":");
+
                     int port = Integer.parseInt(tempArr[1]);
                     if (port<=0)
                         throw new RuntimeException("Media Port must be >0 ");
@@ -146,14 +170,18 @@ public class VertoCallLeg extends AbstractCallLeg {
                         this.callState=CallState.RINGING;
                         this.jingleLeg.sendSdp();
                         this.jingleLeg.addRemoteIceCandidate(candidate1);
-                        this.jingleLeg.addRemoteIceCandidate(candidate2);
+                        //this.jingleLeg.addRemoteIceCandidate(candidate2);
                         this.jingleLeg.sendIceCandidates();
                         this.jingleLeg.sendJingleIceResults();
                     }
                 }
-                case ANSWER -> {}
                 case HANGUP -> {}
                 default -> {
+
+
+
+
+
 
                 }
             }

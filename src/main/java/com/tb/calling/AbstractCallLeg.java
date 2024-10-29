@@ -52,10 +52,61 @@ public abstract class AbstractCallLeg implements CallLeg, TransportListener {
     }
 
     private String priorityId;
+
+    public String getPwd() {
+        return pwd;
+    }
+
+    public void setPwd(String pwd) {
+        this.pwd = pwd;
+    }
+
+    private String pwd;
+
+    public String getUfrag() {
+        return ufrag;
+    }
+
+    public void setUfrag(String ufrag) {
+        this.ufrag = ufrag;
+    }
+
+    private String ufrag;
+
+    public String getFingerprint() {
+        return fingerprint;
+    }
+
+    public void setFingerprint(String fingerprint) {
+        this.fingerprint = fingerprint;
+    }
+
+    private String fingerprint;
+
+    public String getMsId() {
+        return msId;
+    }
+
+    public void setMsId(String msId) {
+        this.msId = msId;
+    }
+
+    private String msId;
+
+    public String getSsrc() {
+        return ssrc;
+    }
+
+    public void setSsrc(String ssrc) {
+        this.ssrc = ssrc;
+    }
+
+    public String ssrc;
     public void setUniqueId(String uniqueId) {
         this.uniqueId = uniqueId;
     }
     private String uniqueId;
+
 
     public String getaParty() {
         return aParty;

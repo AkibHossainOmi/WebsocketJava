@@ -6,9 +6,9 @@ public class StringUtil {
                                                                                    String terminatingStr){
             String substrAfterParam=getStrAfterFirstOccuranceOf(str,paramIdentifier);
             if(substrAfterParam.contains(terminatingStr)){
-                return substrAfterParam.split(terminatingStr)[0];
+                return substrAfterParam.split(terminatingStr)[0].trim();
             }
-            else return substrAfterParam;
+            else return substrAfterParam.trim();
         }
         public static String getStrAfterFirstOccuranceOf(String str, String param){
             int substrStart = str.indexOf(param) + param.length();

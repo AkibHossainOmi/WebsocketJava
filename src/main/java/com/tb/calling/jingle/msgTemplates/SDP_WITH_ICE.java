@@ -1,11 +1,11 @@
 package com.tb.calling.jingle.msgTemplates;
 
 import com.tb.common.uniqueIdGenerator.ShortIdGenerator;
-import okhttp3.OkHttpClient;
-public class SDP {
+
+public class SDP_WITH_ICE {
     public static String createMessage(String bpartyWithId, String apartyWithId, String sid,
                                        String ssrc,String msid, String ufrag, String pwd,
-                                        String fingerprint) {
+                                        String fingerprint,String ip, int port) {
         String xmlPayload = String.format(
                 """
                 <iq from="%s" to="%s" type="set" id="%s">
@@ -36,6 +36,7 @@ public class SDP {
                             </description>
                             <transport ufrag="%s" xmlns="urn:xmpp:jingle:transports:ice-udp:1" pwd="%s">
                                 <fingerprint xmlns="urn:xmpp:jingle:apps:dtls:0" hash="sha-256" setup="active">%s</fingerprint>
+                                <candidate foundation='1' component='1' protocol='udp' priority='2930706431' ip='103.95.96.98' port='20138' type='host'/>
                                 <trickle xmlns="http://gultsch.de/xmpp/drafts/jingle/transports/ice-udp/option"/>
                                 <renomination xmlns="http://gultsch.de/xmpp/drafts/jingle/transports/ice-udp/option"/>
                             </transport>
