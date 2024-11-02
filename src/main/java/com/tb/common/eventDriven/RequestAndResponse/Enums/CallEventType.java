@@ -8,6 +8,6 @@ public enum CallEventType {
     HANGUP,
     SDP,
     ICE_CANDIDATE,
-    ICE_ACK,
+    ICE_CANDIDATE_ACK,
     UNKNOWN
 }

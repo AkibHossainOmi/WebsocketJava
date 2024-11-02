@@ -1,6 +1,6 @@
 package com.tb.calling.jingle.ConversationsRequests;
 
-import com.tb.calling.jingle.msgTemplates.SDPResponse;
+import com.tb.calling.jingle.message.templates.SDPResponse;
 import com.tb.common.StringUtil;
 import com.tb.common.eventDriven.RequestAndResponse.Request;
 import com.tb.common.eventDriven.RequestAndResponse.PayloadType;

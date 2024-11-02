@@ -33,7 +33,6 @@ public class Main {
                 ConnectionConfiguration.SecurityMode.disabled,1);
         JingleConnector jingleConnector= new JingleConnector(xmppSettings,restSettings);
         jingleConnector.connectOrInit();
-        JingleCallLeg jingleCall= new JingleCallLeg(jingleConnector);
         /*XmppRun xmppRun = new XmppRun();
         xmppRun.XmppInstance();*/
         // Wait for a keystroke before exiting

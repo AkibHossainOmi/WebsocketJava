@@ -1,8 +1,8 @@
 package com.tb.calling.jingle;
 
-import com.tb.calling.jingle.msgTemplates.ICE1;
-import com.tb.calling.jingle.msgTemplates.ICE2;
-import com.tb.calling.jingle.msgTemplates.SDP;
+import com.tb.calling.jingle.message.templates.ICE1;
+import com.tb.calling.jingle.message.templates.ICE2;
+import com.tb.calling.jingle.message.templates.SDP;
 
 public class SDPMessageFactory {
 

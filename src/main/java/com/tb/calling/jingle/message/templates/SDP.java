@@ -1,7 +1,6 @@
-package com.tb.calling.jingle.msgTemplates;
+package com.tb.calling.jingle.message.templates;
 
 import com.tb.common.uniqueIdGenerator.ShortIdGenerator;
-import okhttp3.OkHttpClient;
 
 public class SDP {
     public static String createMessage(String apartyWithId, String bpartyWithId, String sid, String ufrag, String pwd) {

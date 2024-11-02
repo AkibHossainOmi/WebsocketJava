@@ -1,6 +1,5 @@
 package com.tb.calling.jingle.ConversationsRequests;
 
-import com.tb.calling.jingle.msgTemplates.SDPResponse;
 import com.tb.common.StringUtil;
 import com.tb.common.eventDriven.RequestAndResponse.Payload;
 import com.tb.common.eventDriven.RequestAndResponse.PayloadType;
@@ -18,7 +17,7 @@ public class ProposeResponse extends Request {
         String aParty = (String)this.getMetadata().get("aParty");
         String bParty = (String)this.getMetadata().get("bParty");
         assert(aParty!=null && bParty!=null);
-        return new Payload(this.getId(), com.tb.calling.jingle.msgTemplates.ProposeResponse.createMessage(bParty,aParty,getId()),
+        return new Payload(this.getId(), com.tb.calling.jingle.message.templates.ProposeResponse.createMessage(bParty,aParty,getId()),
                 JingleMsgType.ICE_RESPONSE);
     }
 }

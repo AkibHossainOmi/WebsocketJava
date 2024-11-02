@@ -12,9 +12,9 @@ import java.util.HashMap;
 public class CallStateMachine {
     private final Map<CallState, Map<CallEventType, Transition>> transitions = new HashMap<>();
     private CallState currentState;
-    private final List<StateChangeListener> publicListeners;
+    private final List<StateMachineListener> publicListeners;
 
-    public CallStateMachine(CallState initialState, List<StateChangeListener> publicListeners) {
+    public CallStateMachine(CallState initialState, List<StateMachineListener> publicListeners) {
         this.currentState = initialState;
         this.publicListeners = publicListeners;
     }
@@ -41,7 +41,7 @@ public class CallStateMachine {
     }
 
     private void notifyListeners(Transition transition, CallEvent event) {
-        for (StateChangeListener listener : publicListeners) {
+        for (StateMachineListener listener : publicListeners) {
             listener.onStateChange(transition, event);
         }
     }

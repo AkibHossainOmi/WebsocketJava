@@ -42,13 +42,13 @@ public class VertoCallLeg extends AbstractCallLeg {
     @Override
     public void startSession() {
         System.out.println("sending Invite...");
-        this.setUniqueId(UUID.randomUUID().toString());
+        this.setSessionId(UUID.randomUUID().toString());
         ICECandidate firstCandidate= null;
         Map.Entry<String, ICECandidate> firstEntry= this.remoteIceCandidates.entrySet().iterator().next();
         firstCandidate=firstEntry.getValue();
-        String msg =StartCall.createMessage("09646888888",this.getUniqueId(),connector.getSessionId(),intGenerator.getNext()
+        String msg =StartCall.createMessage("09646888888",this.getSessionId(),connector.getSessionId(),intGenerator.getNext()
         ,firstCandidate.getIpAddress(),firstCandidate.getPort());
-        connector.sendMsgToConnector(new Payload(this.getUniqueId(),msg, VertoPacket.Invite));
+        connector.sendMsgToConnector(new Payload(this.getSessionId(),msg, VertoPacket.Invite));
         System.out.println(msg);
         this.callState= CallState.SESSION_START;
     }

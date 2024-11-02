@@ -1,4 +1,4 @@
-package com.tb.calling.jingle.msgTemplates;
+package com.tb.calling.jingle.message.templates;
 
 
 
