@@ -2,16 +2,14 @@ package com.tb.calling.verto;
 
 import com.tb.calling.base.AbstractCallLeg;
 import com.tb.calling.base.ICECandidate;
+import com.tb.calling.base.statemachine.Transition;
 import com.tb.calling.jingle.JingleCallLeg;
+import com.tb.calling.jingle.VertoStack;
+import com.tb.common.SignalingEvent;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.*;
-import com.tb.common.eventDriven.Connector;
-import com.tb.calling.verto.msgTemplates.StartCall;
 import com.tb.common.uniqueIdGenerator.ShortIdGenerator;
 import com.tb.common.uniqueIdGenerator.UniqueIntGenerator;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import com.tb.common.eventDriven.RequestAndResponse.Payload;
@@ -27,30 +25,22 @@ public class VertoCallLeg extends AbstractCallLeg {
     }
 
     JingleCallLeg jingleLeg;
-    public VertoCallLeg(Connector connector) {
-        super(connector);
-    }
-    @Override
-    public void onStart(Object message) {
-
+    public VertoCallLeg(VertoStack stack) {
+        super(stack);
     }
 
-    @Override
-    public void onNewMessage(Object message) throws IOException {
-
-    }
     @Override
     public void startSession() {
-        System.out.println("sending Invite...");
+       /* System.out.println("sending Invite...");
         this.setSessionId(UUID.randomUUID().toString());
         ICECandidate firstCandidate= null;
         Map.Entry<String, ICECandidate> firstEntry= this.remoteIceCandidates.entrySet().iterator().next();
         firstCandidate=firstEntry.getValue();
         String msg =StartCall.createMessage("09646888888",this.getSessionId(),connector.getSessionId(),intGenerator.getNext()
         ,firstCandidate.getIpAddress(),firstCandidate.getPort());
-        connector.sendMsgToConnector(new Payload(this.getSessionId(),msg, VertoPacket.Invite));
+        //connector.sendMsgToConnector(new Payload(this.getSessionId(),msg, VertoPacket.Invite));
         System.out.println(msg);
-        this.callState= CallState.SESSION_START;
+        this.callState= CallState.SESSION_START;*/
     }
 
     @Override
@@ -189,4 +179,13 @@ public class VertoCallLeg extends AbstractCallLeg {
         else return null;
     }
 
+    @Override
+    public void onStateChange(Transition transition, SignalingEvent msg) {
+
+    }
+
+    @Override
+    public void onInbandStateMessage(CallState state, SignalingEvent msg) {
+
+    }
 }

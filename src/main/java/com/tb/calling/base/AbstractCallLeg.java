@@ -5,7 +5,7 @@ import com.tb.calling.base.statemachine.CallStateMachine;
 import com.tb.calling.base.statemachine.StateMachineListener;
 import com.tb.calling.base.statemachine.StateMachineType;
 import com.tb.calling.base.statemachine.Transition;
-import com.tb.common.SignalingMessage;
+import com.tb.common.SignalingEvent;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.CallEventType;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.CallState;
 import com.tb.common.eventDriven.TransportListener;
@@ -59,9 +59,9 @@ public abstract class AbstractCallLeg implements CallLeg, TransportListener, Sta
     }
 
     @Override
-    public abstract void onStateChange(Transition transition, SignalingMessage msg);
+    public abstract void onStateChange(Transition transition, SignalingEvent msg);
     @Override
-    public abstract void onInbandStateMessage(CallState state, SignalingMessage msg);
+    public abstract void onInbandStateMessage(CallState state, SignalingEvent msg);
 
     public CallStateMachine getStateMachine(StateMachineType stateMachineType) {
         return stateMachines.get(stateMachineType);

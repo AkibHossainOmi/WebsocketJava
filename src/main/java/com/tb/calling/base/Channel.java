@@ -1,9 +1,8 @@
 package com.tb.calling.base;
 
-import com.tb.common.AbstractSignalingMessage;
-import com.tb.common.SignalingMessage;
+import com.tb.common.SignalingEvent;
 
 public interface Channel {
-    void sendSignalingMessage(SignalingMessage msg);
-    void addPublicListener(ChannelListener listener);
+    void sendSignalingMessage(SignalingEvent msg);
+    void addPublicListener(SignalingListener listener);
 }

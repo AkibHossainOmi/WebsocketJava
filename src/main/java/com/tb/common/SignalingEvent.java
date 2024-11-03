@@ -4,17 +4,16 @@ import com.tb.common.eventDriven.RequestAndResponse.Enums.CallEventType;
 
 import java.time.LocalDateTime;
 
-public abstract class SignalingMessage {
+public abstract class SignalingEvent {
     final CallEventType eventType;
-    final boolean isFullyParsed;
-    final LocalDateTime messageTime;
     protected String sessionId;
-
-    public SignalingMessage(String sessionId, CallEventType eventType, boolean isFullyParsed) {
+    final boolean isFullyParsed;
+    final LocalDateTime eventTime;
+    public SignalingEvent(String sessionId, CallEventType eventType, boolean isFullyParsed) {
         this.sessionId = sessionId;
         this.eventType = eventType;
         this.isFullyParsed = isFullyParsed;
-        this.messageTime = LocalDateTime.now();
+        this.eventTime = LocalDateTime.now();
     }
 
     public CallEventType getCallEventType() {

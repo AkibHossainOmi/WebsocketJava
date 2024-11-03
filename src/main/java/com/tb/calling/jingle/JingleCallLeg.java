@@ -1,12 +1,15 @@
 package com.tb.calling.jingle;
 import com.tb.calling.base.AbstractCallLeg;
 import com.tb.calling.base.AbstractCallStack;
+import com.tb.calling.base.statemachine.Transition;
 import com.tb.calling.jingle.message.templates.Accept;
 import com.tb.calling.jingle.message.templates.Proceed;
 import com.tb.calling.jingle.message.templates.Ringing;
 import com.tb.calling.verto.VertoConnector;
 import com.tb.calling.jingle.ConversationsRequests.JingleICE;
 import com.tb.calling.jingle.ConversationsRequests.JingleMsgType;
+import com.tb.common.SignalingEvent;
+import com.tb.common.eventDriven.RequestAndResponse.Enums.CallState;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.TransportPacket;
 import com.tb.common.StringUtil;
 import com.tb.common.UUIDGen;
@@ -180,4 +183,13 @@ public class JingleCallLeg extends AbstractCallLeg {
     }
 
 
+    @Override
+    public void onStateChange(Transition transition, SignalingEvent msg) {
+
+    }
+
+    @Override
+    public void onInbandStateMessage(CallState state, SignalingEvent msg) {
+
+    }
 }

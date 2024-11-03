@@ -3,7 +3,7 @@ package com.tb.calling.verto;
 import com.tb.common.eventDriven.ServicePingParams;
 import com.tb.transport.websocket.WebSocketSettings;
 
-public class VertoConnectParams {
+public class VertoSettings {
     String login;
     String password;
     WebSocketSettings webSocketSettings;
@@ -25,8 +25,8 @@ public class VertoConnectParams {
         return webSocketSettings;
     }
 
-    public VertoConnectParams(String login, String password,
-                              WebSocketSettings webSocketSettings, ServicePingParams servicePingParams) {
+    public VertoSettings(String login, String password,
+                         WebSocketSettings webSocketSettings, ServicePingParams servicePingParams) {
         this.login = login;
         this.password = password;
         this.webSocketSettings = webSocketSettings;

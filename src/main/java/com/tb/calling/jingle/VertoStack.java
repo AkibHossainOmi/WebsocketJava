@@ -2,15 +2,16 @@ package com.tb.calling.jingle;
 
 import com.tb.calling.base.AbstractCallStack;
 import com.tb.calling.base.statemachine.Transition;
+import com.tb.calling.verto.VertoCallLeg;
 import com.tb.common.SignalingEvent;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.CallEventType;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.CallState;
 import com.tb.transport.rest.RestSettings;
 import com.tb.transport.xmpp.XmppSettings;
 
-public class JingleStack extends AbstractCallStack {
-    public JingleStack(RestSettings restSettings,
-                       XmppSettings xmppSettings, JingleChannel channel) {
+public class VertoStack extends AbstractCallStack {
+    public VertoStack(RestSettings restSettings,
+                      XmppSettings xmppSettings, JingleChannel channel) {
         super(restSettings,xmppSettings,channel);
     }
     @Override
@@ -20,7 +21,7 @@ public class JingleStack extends AbstractCallStack {
             case SESSION_START -> {
                 if(super.getCalls().get(msg.getSessionId())==null){
                     if(this.getCalls().containsKey(msg.getSessionId())) return;//ignore session start if call exists
-                    JingleCallLeg jingleCall= new JingleCallLeg(this);
+                    VertoCallLeg vertoCallLeg= new VertoCallLeg(this);
                     this.getCalls().put(jingleCall.getSessionId(),jingleCall);
                 }
             }

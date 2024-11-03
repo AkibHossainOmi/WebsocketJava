@@ -1,6 +1,6 @@
 package com.tb.calling.base.statemachine;
 
-import com.tb.common.CallEvent;
+import com.tb.common.SignalingEvent;
 import com.tb.common.Logger;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.CallEventType;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.CallState;
@@ -25,7 +25,7 @@ public class CallStateMachine {
         return this;
     }
 
-    public void send(CallEvent event) {
+    public void send(SignalingEvent event) {
         Map<CallEventType, Transition> stateTransitions = transitions.get(currentState);
         if (stateTransitions != null) {
             Transition transition = stateTransitions.get(event.getEventType());
@@ -40,7 +40,7 @@ public class CallStateMachine {
         }
     }
 
-    private void notifyListeners(Transition transition, CallEvent event) {
+    private void notifyListeners(Transition transition, SignalingEvent event) {
         for (StateMachineListener listener : publicListeners) {
             listener.onStateChange(transition, event);
         }

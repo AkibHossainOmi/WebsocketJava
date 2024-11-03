@@ -1,6 +1,6 @@
 package com.tb.calling.base.statemachine;
 
-import com.tb.common.CallEvent;
+import com.tb.common.SignalingEvent;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.CallState;
 
 import java.util.HashMap;
@@ -19,7 +19,7 @@ public class ParallelStateContainer {
     }
 
     // Method to send an event to all state machines
-    public void sendEvent(CallEvent event) {
+    public void sendEvent(SignalingEvent event) {
         for (Map.Entry<StateMachineType, CallStateMachine> entry : stateMachines.entrySet()) {
             CallStateMachine stateMachine = entry.getValue();
             stateMachine.send(event);

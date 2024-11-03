@@ -16,12 +16,12 @@ import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class VertoConnector implements Connector{
-    public VertoConnectParams getParams() {
+    public VertoSettings getParams() {
         return params;
     }
 
     //Transport webSocket;
-    VertoConnectParams params;
+    VertoSettings params;
 
     public ServiceHealthTracker getServiceHealthTracker() {
         return serviceHealthTracker;
@@ -46,7 +46,7 @@ public class VertoConnector implements Connector{
         this.pingExpiresInSec = pingExpiresInSec;
     }
     int pingExpiresInSec=2;
-    public VertoConnector(VertoConnectParams params) {
+    public VertoConnector(VertoSettings params) {
         this.params=params;
         this.transportListener = createTransportListener(this);
         this.serviceHealthTracker =

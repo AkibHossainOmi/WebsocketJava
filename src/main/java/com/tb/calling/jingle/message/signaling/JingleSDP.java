@@ -1,10 +1,10 @@
 package com.tb.calling.jingle.message.signaling;
 
-import com.tb.common.AbstractSignalingMessage;
+import com.tb.common.AbstractSignalingEvent;
 import com.tb.common.StringUtil;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.CallEventType;
 
-public class JingleSDP extends AbstractSignalingMessage<String> {
+public class JingleSDP extends AbstractSignalingEvent<String> {
     private String fingerprint;
     private String msid;
     private String ssrc;

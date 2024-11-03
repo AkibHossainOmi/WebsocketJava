@@ -1,10 +1,9 @@
 package com.tb;
 
-import com.tb.calling.jingle.JingleCallLeg;
 import com.tb.calling.jingle.JingleConnector;
 import com.tb.common.WebSocketType;
 import com.tb.common.eventDriven.ServicePingParams;
-import com.tb.calling.verto.VertoConnectParams;
+import com.tb.calling.verto.VertoSettings;
 import com.tb.calling.verto.VertoConnector;
 import com.tb.transport.rest.RestSettings;
 import com.tb.transport.websocket.WebSocketSettings;
@@ -18,7 +17,7 @@ import java.util.Scanner;
 public class Main {
 
     public static void main(String[] args) throws XmppStringprepException {
-        VertoConnectParams params = new VertoConnectParams("09646888888",
+        VertoSettings params = new VertoSettings("09646888888",
                 "09646888888##asdf",
                 new WebSocketSettings(WebSocketType.Ws, "ws://iptsp.cosmocom.net:8081", 1000),
                 new ServicePingParams());
