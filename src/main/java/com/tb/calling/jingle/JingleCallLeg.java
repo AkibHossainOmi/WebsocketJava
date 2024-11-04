@@ -6,15 +6,15 @@ import com.tb.calling.jingle.message.templates.Accept;
 import com.tb.calling.jingle.message.templates.Proceed;
 import com.tb.calling.jingle.message.templates.Ringing;
 import com.tb.calling.verto.VertoConnector;
-import com.tb.calling.jingle.ConversationsRequests.JingleICE;
-import com.tb.calling.jingle.ConversationsRequests.JingleMsgType;
+import com.tb.calling.jingle.Conversations.JingleICE;
+import com.tb.calling.jingle.Conversations.JingleMsgType;
 import com.tb.common.SignalingEvent;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.CallState;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.TransportPacket;
 import com.tb.common.StringUtil;
 import com.tb.common.UUIDGen;
 import com.tb.common.eventDriven.RequestAndResponse.Payload;
-import com.tb.calling.jingle.ConversationsRequests.ProposeResponse;
+import com.tb.calling.jingle.Conversations.ProposeResponse;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.tb.common.eventDriven.RequestAndResponse.Enums;
 
-public enum CallSignalingProtocol {
+public enum SignalingProtocol {
     SIP,
     VERTO,
     JINGLE

@@ -19,12 +19,24 @@ public class TwoWayCallBridge {
         this.origStack=origStack;
         this.termStack=termStack;
         this.origListener= createOrigStateListener(this);
-        this.termListener= createOrigStateListener(this);
+        this.termListener= createTermStateListener(this);
         origLeg.addStateListener(origListener);
         termLeg.addStateListener(termListener);
     }
 
     private static StateMachineListener createOrigStateListener(TwoWayCallBridge bridge) {
+        return new StateMachineListener() {
+            @Override
+            public void onStateChange(Transition transition, SignalingEvent message) {
+
+            }
+            @Override
+            public void onInbandStateMessage(CallState state, SignalingEvent message) {
+
+            }
+        };
+    }
+    private static StateMachineListener createTermStateListener(TwoWayCallBridge bridge) {
         return new StateMachineListener() {
             @Override
             public void onStateChange(Transition transition, SignalingEvent message) {

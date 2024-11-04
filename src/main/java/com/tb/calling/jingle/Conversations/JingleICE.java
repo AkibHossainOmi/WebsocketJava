@@ -1,13 +1,13 @@
-package com.tb.calling.jingle.ConversationsRequests;
+package com.tb.calling.jingle.Conversations;
 
-import com.tb.calling.jingle.message.templates.SDPResponse;
+import com.tb.calling.jingle.message.templates.ICEResponse;
 import com.tb.common.StringUtil;
 import com.tb.common.eventDriven.RequestAndResponse.Request;
 import com.tb.common.eventDriven.RequestAndResponse.PayloadType;
 import com.tb.common.eventDriven.RequestAndResponse.Payload;
 
-public class JingleSDP extends Request {
-    public JingleSDP(String data, PayloadType payloadType) {
+public class JingleICE extends Request {
+    public JingleICE(String data, PayloadType payloadType) {
         super(data, payloadType);
         String id= StringUtil.Parser
                 .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(data,"id='","'");
@@ -18,7 +18,7 @@ public class JingleSDP extends Request {
         String aParty = (String)this.getMetadata().get("aParty");
         String bParty = (String)this.getMetadata().get("bParty");
         assert(aParty!=null && bParty!=null);
-        return new Payload(this.getId(),SDPResponse.createMessage(aParty,bParty,getId()),
-                JingleMsgType.ICE_RESPONSE);
+        return new Payload(this.getId(),
+        ICEResponse.createMessage(aParty,bParty,getId()),JingleMsgType.ICE_RESPONSE);
     }
 }

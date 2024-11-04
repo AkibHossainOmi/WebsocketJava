@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public abstract class SignalingEvent {
     final CallEventType eventType;
-    protected String sessionId;
+    final String sessionId;
     final boolean isFullyParsed;
     final LocalDateTime eventTime;
     public SignalingEvent(String sessionId, CallEventType eventType, boolean isFullyParsed) {
@@ -15,19 +15,12 @@ public abstract class SignalingEvent {
         this.isFullyParsed = isFullyParsed;
         this.eventTime = LocalDateTime.now();
     }
-
     public CallEventType getCallEventType() {
         return this.eventType;
     }
-
     public Boolean isFullyParsed() {
         return this.isFullyParsed;
     }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
-
     public String getSessionId() {
         return sessionId;
     }

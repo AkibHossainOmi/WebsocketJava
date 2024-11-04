@@ -1,4 +1,4 @@
-package com.tb.calling.jingle.ConversationsRequests;
+package com.tb.calling.jingle.Conversations;
 
 import com.tb.common.eventDriven.RequestAndResponse.PayloadType;
 

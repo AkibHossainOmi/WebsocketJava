@@ -8,10 +8,16 @@ import com.tb.common.eventDriven.RequestAndResponse.Enums.CallState;
 import com.tb.transport.rest.RestSettings;
 import com.tb.transport.xmpp.XmppSettings;
 
+import java.util.Arrays;
+
 public class JingleStack extends AbstractCallStack {
+    private final RestSettings restSettings;
+    private final XmppSettings xmppSettings;
     public JingleStack(RestSettings restSettings,
                        XmppSettings xmppSettings, JingleChannel channel) {
-        super(restSettings,xmppSettings,channel);
+        super(channel);
+        this.restSettings= restSettings;
+        this.xmppSettings= xmppSettings;
     }
     @Override
     public void onSignalingMessage(SignalingEvent msg) {
@@ -21,16 +27,8 @@ public class JingleStack extends AbstractCallStack {
                 if(super.getCalls().get(msg.getSessionId())==null){
                     if(this.getCalls().containsKey(msg.getSessionId())) return;//ignore session start if call exists
                     JingleCallLeg jingleCall= new JingleCallLeg(this);
-                    this.getCalls().put(jingleCall.getSessionId(),jingleCall);
+                    this.addCall(jingleCall, Arrays.asList(msg));
                 }
-            }
-            case TRYING -> {
-            }
-            case RINGING -> {
-            }
-            case ANSWER -> {
-            }
-            case HANGUP -> {
             }
             case SDP -> {
             }
@@ -39,6 +37,9 @@ public class JingleStack extends AbstractCallStack {
             case ICE_CANDIDATE_ACK -> {
             }
             case UNKNOWN -> {
+            }
+            default -> {
+
             }
         }
     }
@@ -49,5 +50,13 @@ public class JingleStack extends AbstractCallStack {
     @Override
     protected void onCallInbandStateMessage(String sessionId, CallState state, SignalingEvent msg){
 
+    }
+
+    public RestSettings getRestSettings() {
+        return restSettings;
+    }
+
+    public XmppSettings getXmppSettings() {
+        return xmppSettings;
     }
 }

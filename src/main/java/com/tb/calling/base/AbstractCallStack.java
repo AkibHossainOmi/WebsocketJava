@@ -3,30 +3,28 @@ package com.tb.calling.base;
 import com.tb.calling.base.statemachine.StateMachineListener;
 import com.tb.calling.base.statemachine.Transition;
 import com.tb.common.SignalingEvent;
+import com.tb.common.StackEvent;
+import com.tb.common.eventDriven.RequestAndResponse.Enums.SignalingProtocol;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.CallState;
-import com.tb.transport.rest.RestSettings;
-import com.tb.transport.xmpp.XmppSettings;
+import com.tb.common.eventDriven.RequestAndResponse.Enums.StackEventType;
 
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class AbstractCallStack implements SignalingListener, StateMachineListener {
+    private final SignalingProtocol signalingProtocol;
     private final Hashtable<String, AbstractCallLeg> calls;
     private final Channel channel;
-    private final RestSettings restSettings;
-    private final XmppSettings xmppSettings;
-    private final List<SignalingListener> signalingListeners= new CopyOnWriteArrayList<>();
-    public AbstractCallStack(RestSettings restSettings,
-                             XmppSettings xmppSettings, Channel channel) {
+    private final List<StackMsgListener> publicListeners = new CopyOnWriteArrayList<>();
+    public AbstractCallStack(Channel channel) {
         this.calls = new Hashtable<>();
-        this.restSettings= restSettings;
-        this.xmppSettings= xmppSettings;
         this.channel= channel;
         this.channel.addPublicListener(this);
+        this.signalingProtocol=channel.getSignalingProtocol();
     }
-    public void addSignalingListener(SignalingListener signalingListener){
-        this.signalingListeners.add(signalingListener);
+    public void addPublicListener(StackMsgListener listener){
+        this.publicListeners.add(listener);
     }
     public void onStateChange(Transition transition, SignalingEvent msg){
         this.onCallStateChange(msg.getSessionId(), transition,msg);
@@ -36,8 +34,12 @@ public abstract class AbstractCallStack implements SignalingListener, StateMachi
     }//between this and a call
     protected abstract void onCallStateChange(String sessionId, Transition transition, SignalingEvent msg);//between this and derived stack
     protected abstract void onCallInbandStateMessage(String sessionId, CallState state, SignalingEvent msg);//between this and derived stack
-    public void addCall(AbstractCallLeg call) {
+    protected void addCall(AbstractCallLeg call, List<SignalingEvent> relevantMsgs) {
         calls.put(call.getSessionId(), call);
+        for (StackMsgListener publicListener : this.publicListeners) {
+            StackEvent msg = new StackEvent(StackEventType.CALL_CREATED, this.signalingProtocol, relevantMsgs);
+            publicListener.onStackMessage(msg);
+        }
     }
     public void removeCall(String callId) {
         calls.remove(callId);
@@ -48,4 +50,5 @@ public abstract class AbstractCallStack implements SignalingListener, StateMachi
     public Hashtable<String, AbstractCallLeg> getCalls() {
         return calls;
     }
+    void sendToCallStateMachine()
 }
