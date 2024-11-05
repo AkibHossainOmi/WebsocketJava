@@ -50,5 +50,8 @@ public abstract class AbstractCallStack implements SignalingListener, StateMachi
     public Hashtable<String, AbstractCallLeg> getCalls() {
         return calls;
     }
-    void sendToCallStateMachine()
+
+    public Channel getChannel() {
+        return channel;
+    }
 }

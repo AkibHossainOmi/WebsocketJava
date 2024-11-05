@@ -15,7 +15,7 @@ public abstract class SignalingEvent {
         this.isFullyParsed = isFullyParsed;
         this.eventTime = LocalDateTime.now();
     }
-    public CallEventType getCallEventType() {
+    public CallEventType getEventType() {
         return this.eventType;
     }
     public Boolean isFullyParsed() {

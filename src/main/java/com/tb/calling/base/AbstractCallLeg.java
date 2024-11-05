@@ -17,8 +17,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class AbstractCallLeg implements CallLeg, TransportListener, StateMachineListener {
     final AbstractCallStack stack;
-    protected static final HashMap<StateMachineType, CallStateMachine> stateMachines = new HashMap<>();
-    private final List<StateMachineListener> publicStateListeners = new CopyOnWriteArrayList<>();
+    protected final CallStateMachine stateMachine;
+    protected final List<StateMachineListener> publicStateListeners = new CopyOnWriteArrayList<>();
     protected final HashMap<String, ICECandidate> remoteIceCandidates = new HashMap<>();
     public ICECandidate getRemoteIceCandidate(String id) {
         return this.remoteIceCandidates.get(id);
@@ -52,8 +52,11 @@ public abstract class AbstractCallLeg implements CallLeg, TransportListener, Sta
         stateMachine.addTransition(CallState.TRYING, CallEventType.RINGING, CallState.RINGING);
         stateMachine.addTransition(CallState.RINGING, CallEventType.HANGUP, CallState.HANGUP);
         stateMachine.addTransition(CallState.RINGING, CallEventType.ANSWER, CallState.ANSWERED);
+        this.stateMachine=stateMachine;
     }
-
+    public void sendToStateMachine(SignalingEvent msg){
+        this.stateMachine.send(msg);
+    }
     public void addRemoteIceCandidate(ICECandidate remoteIce) {
         this.remoteIceCandidates.put(remoteIce.getId(), remoteIce);
     }
@@ -63,8 +66,8 @@ public abstract class AbstractCallLeg implements CallLeg, TransportListener, Sta
     @Override
     public abstract void onInbandStateMessage(CallState state, SignalingEvent msg);
 
-    public CallStateMachine getStateMachine(StateMachineType stateMachineType) {
-        return stateMachines.get(stateMachineType);
+    public CallStateMachine getStateMachine() {
+        return this.stateMachine;
     }
     public String getSdp() {
         return sdp;

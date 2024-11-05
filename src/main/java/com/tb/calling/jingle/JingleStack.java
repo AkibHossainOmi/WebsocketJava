@@ -21,7 +21,7 @@ public class JingleStack extends AbstractCallStack {
     }
     @Override
     public void onSignalingMessage(SignalingEvent msg) {
-        CallEventType eventType=msg.getCallEventType();
+        CallEventType eventType=msg.getEventType();
         switch (eventType) {
             case SESSION_START -> {
                 if(super.getCalls().get(msg.getSessionId())==null){

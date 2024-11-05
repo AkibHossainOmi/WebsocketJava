@@ -6,18 +6,29 @@ import com.tb.calling.jingle.message.signaling.JingleSDP;
 import com.tb.calling.jingle.message.signaling.Propose;
 import com.tb.common.AbstractSignalingEvent;
 import com.tb.common.SignalingEvent;
+import com.tb.common.eventDriven.RequestAndResponse.Enums.SignalingProtocol;
+import com.tb.common.eventDriven.RequestAndResponse.MultiThreadedRequestHandler;
 import com.tb.common.eventDriven.RequestAndResponse.Payload;
 import com.tb.common.eventDriven.TransportListener;
+import com.tb.transport.rest.RestSettings;
+import com.tb.transport.xmpp.XmppSettings;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class JingleChannel implements TransportListener, Channel {
+    private final RestSettings restSettings;
+    private final XmppSettings xmppSettings;
     private final JingleConnector jingleConnector;
     private final List<SignalingListener> publicListeners= new CopyOnWriteArrayList<>();
-    public JingleChannel(JingleConnector jingleConnector) {
+    private final MultiThreadedRequestHandler multiThreadedRequestHandler;
+    public JingleChannel(JingleConnector jingleConnector, RestSettings restSettings, XmppSettings xmppSettings) {
         this.jingleConnector = jingleConnector;
+        this.restSettings=restSettings;
+        this.xmppSettings=xmppSettings;
         this.jingleConnector.addPublicListener(this);
+        this.multiThreadedRequestHandler =
+                new MultiThreadedRequestHandler(jingleConnector.restTransport);
     }
     @Override
     public void onTransportMessage(Payload payload) {
@@ -48,11 +59,16 @@ public class JingleChannel implements TransportListener, Channel {
     public void addPublicListener(SignalingListener listener) {
         this.publicListeners.add(listener);
     }
+
+    @Override
+    public SignalingProtocol getSignalingProtocol() {
+        return SignalingProtocol.JINGLE;
+    }
+
     @Override
     public void onTransportError(Payload payload) {
 
     }
-
     @Override
     public void onTransportStatus(Payload payload) {
 
@@ -64,5 +80,8 @@ public class JingleChannel implements TransportListener, Channel {
     @Override
     public void onTransportClose(Payload payload) {
 
+    }
+    public MultiThreadedRequestHandler getMultiThreadedRequestHandler() {
+        return multiThreadedRequestHandler;
     }
 }

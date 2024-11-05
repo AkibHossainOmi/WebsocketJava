@@ -33,7 +33,7 @@ public class CallStateMachine {
                 currentState = transition.getTargetState();
                 notifyListeners(transition, event);  // Notify listeners about the state change
             } else {
-                Logger.log(LogSeverity.WARNING, "No transition available for event: " + event.getRawData());
+                Logger.log(LogSeverity.WARNING, "No transition available for event: " + event.getEventType());
             }
         } else {
             Logger.log(LogSeverity.WARNING, "No transitions defined for current state: " + currentState);

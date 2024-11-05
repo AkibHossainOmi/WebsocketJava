@@ -8,8 +8,6 @@ import com.tb.calling.verto.VertoSettings;
 import com.tb.common.SignalingEvent;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.CallEventType;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.CallState;
-import com.tb.transport.rest.RestSettings;
-import com.tb.transport.xmpp.XmppSettings;
 
 public class VertoStack extends AbstractCallStack {
     public VertoStack(VertoSettings vertoSettings, VertoChannel channel) {
@@ -17,7 +15,7 @@ public class VertoStack extends AbstractCallStack {
     }
     @Override
     public void onSignalingMessage(SignalingEvent msg) {
-        CallEventType eventType=msg.getCallEventType();
+        CallEventType eventType=msg.getEventType();
         switch (eventType) {
             case SESSION_START -> {
                 if(super.getCalls().get(msg.getSessionId())==null){

@@ -1,6 +1,8 @@
 package com.tb.calling.jingle;
 import com.tb.calling.base.AbstractCallLeg;
 import com.tb.calling.base.AbstractCallStack;
+import com.tb.calling.base.ICECandidate;
+import com.tb.calling.base.statemachine.StateMachineListener;
 import com.tb.calling.base.statemachine.Transition;
 import com.tb.calling.jingle.message.templates.Accept;
 import com.tb.calling.jingle.message.templates.Proceed;
@@ -21,7 +23,7 @@ import java.util.List;
 
 public class JingleCallLeg extends AbstractCallLeg {
     SDPMessageFactory sdpMessageFactory;
-    AbstractCallStack stack;
+    JingleStack stack;
     final List<JingleICE> jingleIceCandidates = new ArrayList<>();
     VertoConnector vertoConnector;
     public JingleCallLeg(JingleStack stack) {
@@ -29,7 +31,8 @@ public class JingleCallLeg extends AbstractCallLeg {
     }
     public void sendJingleIceResults(){
         for (JingleICE jingleIceCandidate : jingleIceCandidates) {
-            this.multiThreadedRequestHandler.sendResponse(jingleIceCandidate);
+            this.stack.getChannel().getMultiThreadedRequestHandler()
+                                    .sendResponse(jingleIceCandidate);
         }
     }
     @Override
@@ -122,7 +125,7 @@ public class JingleCallLeg extends AbstractCallLeg {
 
         this.sdpMessageFactory = new SDPMessageFactory(this.getbParty() + "/" + this.getbPartyDeviceId(),
                 this.getaParty() + "/" + this.getaPartyDeviceId(),
-                this.getSessionId(),
+                this.getUniqueId(),
                 vertoCall.getVertoSdpParamA().getSsrc(),
                 vertoCall.getVertoSdpParamA().getMsid(),
                 vertoCall.getVertoSdpParamA().getUfrag(),
@@ -141,7 +144,7 @@ public class JingleCallLeg extends AbstractCallLeg {
 
     public void proceed() {
         String proceed = Proceed.createMessage(getaParty()+"/"+getaPartyDeviceId(),
-                getbParty()+"/"+getbPartyDeviceId(), this.getSessionId());
+                getbParty()+"/"+getbPartyDeviceId(), this.getUniqueId());
         Payload p= new Payload(UUIDGen.getNextAsStr(),proceed, TransportPacket.Payload);
         p.getMetadata().put("useRest", true);
         this.getConnector().sendMsgToConnector(p);
@@ -149,7 +152,7 @@ public class JingleCallLeg extends AbstractCallLeg {
 
     public void accept() {
         // Call Accept class and pass extractedId
-        String accept= Accept.createMessage( getbParty()+"/"+getbPartyDeviceId(), getbParty(), this.getSessionId());
+        String accept= Accept.createMessage( getbParty()+"/"+getbPartyDeviceId(), getbParty(), this.getUniqueId());
         Payload p= new Payload(UUIDGen.getNextAsStr(),accept, TransportPacket.Payload);
         p.getMetadata().put("useRest", true);
         this.getConnector().sendMsgToConnector(p);
@@ -157,7 +160,7 @@ public class JingleCallLeg extends AbstractCallLeg {
 
     public void ringing() {
         // Call Accept class and pass extractedId
-        String ringing= Ringing.createMessage( getbParty()+"/"+getbPartyDeviceId(), getaParty()+"/"+getaPartyDeviceId(), this.getSessionId());
+        String ringing= Ringing.createMessage( getbParty()+"/"+getbPartyDeviceId(), getaParty()+"/"+getaPartyDeviceId(), this.getUniqueId());
         Payload p= new Payload(UUIDGen.getNextAsStr(),ringing, TransportPacket.Payload);
         p.getMetadata().put("useRest", true);
         this.getConnector().sendMsgToConnector(p);
@@ -181,11 +184,10 @@ public class JingleCallLeg extends AbstractCallLeg {
     public void onTransportStatus(Payload payload) {
 
     }
-
-
-    @Override
-    public void onStateChange(Transition transition, SignalingEvent msg) {
-
+    public void onStateChange(Transition transition, SignalingEvent msg){
+        for (StateMachineListener publicStateListener : this.publicStateListeners) {
+            publicStateListener.onStateChange(transition,msg);
+        }
     }
 
     @Override

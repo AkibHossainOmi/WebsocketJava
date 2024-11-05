@@ -1,4 +1,4 @@
-package com.tb.calling.jingle.message.templates;
+package com.tb.calling.jingle.msgTemplates;
 
 public class ICEResponse {
     public static String createMessage( String apartyWithId, String bpartyWithId, String id) {
