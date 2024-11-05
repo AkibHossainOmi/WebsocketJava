@@ -67,8 +67,6 @@ public class XmppTransport implements Transport {
                 for (TransportListener publicListener : publicListeners) {
                     publicListener.onTransportMessage(new Payload(UUID.randomUUID().toString(),
                             stanza.toXML().toString(), TransportPacket.Payload));
-
-
                 }
             }
         };

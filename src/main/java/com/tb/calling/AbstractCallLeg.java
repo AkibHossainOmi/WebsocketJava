@@ -109,6 +109,15 @@ public abstract class AbstractCallLeg implements CallLeg, TransportListener {
         this.phoneNumber = phoneNumber;
     }
 
+    public String getCallPing() {
+        return callPing;
+    }
+
+    public void setCallPing(String callPing) {
+        this.callPing = callPing;
+    }
+
+    public String callPing;
     String phoneNumber;
 
     public String ssrc;

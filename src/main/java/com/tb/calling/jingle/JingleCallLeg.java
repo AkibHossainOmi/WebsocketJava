@@ -125,7 +125,7 @@ public class JingleCallLeg extends AbstractCallLeg {
     @Override
     public void onTransportMessage(Payload data) {
         String msg = data.getData();
-        if (msg.contains("jm-propose")) {
+        if (msg.contains("jm-propose") && !msg.contains("callping")) {
             this.callState = CallState.SESSION_START;
 
             String aPartyWithDevice = StringUtil.Parser
@@ -153,6 +153,10 @@ public class JingleCallLeg extends AbstractCallLeg {
             Delay.sleep(1000);
             this.accept();
             this.proceed();
+        }
+        if (msg.contains("jm-propose") && msg.contains("callping")) {//call-ping
+            this.setCallPing(StringUtil.Parser
+                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "media='audio' ", "='true'"));
         }
         if (msg.contains("session-initiate")) {
 
