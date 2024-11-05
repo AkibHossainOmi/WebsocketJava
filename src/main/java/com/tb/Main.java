@@ -21,17 +21,17 @@ import java.util.UUID;
 public class Main {
 
     public static void main(String[] args) throws XmppStringprepException {
-        VertoConnectParams params = new VertoConnectParams("09646888888",
-                "09646888888##asdf",
-                new WebSocketSettings(WebSocketType.Ws, "ws://iptsp.cosmocom.net:8081", 1000),
+        VertoConnectParams params = new VertoConnectParams("09638999999",
+                "09638999999##asdf",
+                new WebSocketSettings(WebSocketType.Ws, "ws://103.248.13.73:8081", 1000),
                 new ServicePingParams());
         VertoConnector vc = new VertoConnector(params);
         vc.connectOrInit();
         delay(1000);
         vc.login();
 
-        RestSettings restSettings= new RestSettings("http://192.168.0.31:5280/rest");
-        XmppSettings xmppSettings= new XmppSettings("192.168.0.31",5222,"test6",
+        RestSettings restSettings= new RestSettings("http://36.255.71.143:5280/rest");
+        XmppSettings xmppSettings= new XmppSettings("36.255.71.143",5222,"appout",
                 "test123","localhost","Conversations.restB",
                 ConnectionConfiguration.SecurityMode.disabled,1);
         JingleConnector jingleConnector= new JingleConnector(xmppSettings,restSettings);

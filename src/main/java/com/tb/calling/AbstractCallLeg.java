@@ -101,6 +101,16 @@ public abstract class AbstractCallLeg implements CallLeg, TransportListener {
         this.ssrc = ssrc;
     }
 
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    String phoneNumber;
+
     public String ssrc;
     public void setUniqueId(String uniqueId) {
         this.uniqueId = uniqueId;

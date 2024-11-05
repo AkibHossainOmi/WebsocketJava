@@ -3,7 +3,6 @@ package com.tb.calling.jingle;
 import com.tb.common.StringUtil;
 
 public class JingleSdpParamA {
-
     private String fingerprint;
     private String msid;
     private String ssrc;
@@ -48,8 +47,4 @@ public class JingleSdpParamA {
     public String getUfrag() {
         return ufrag;
     }
-
-
-
-
 }

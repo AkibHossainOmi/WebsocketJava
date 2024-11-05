@@ -2,6 +2,7 @@ package com.tb.calling;
 
 import com.tb.calling.jingle.JingleCallLeg;
 import com.tb.calling.verto.VertoSdpParamB;
+import com.tb.calling.verto.msgTemplates.Hangup;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.VertoPacket;
 import com.tb.common.eventDriven.Connector;
 import com.tb.calling.verto.msgTemplates.StartCall;
@@ -52,13 +53,20 @@ public class VertoCallLeg extends AbstractCallLeg {
         ICECandidate firstCandidate= null;
         Map.Entry<String, ICECandidate> firstEntry= this.remoteIceCandidates.entrySet().iterator().next();
         firstCandidate=firstEntry.getValue();
-        String msg =StartCall.createMessage("09646888888",this.getUniqueId(),connector.getSessionId(),intGenerator.getNext()
+        String msg =StartCall.createMessage("01754105098",this.getUniqueId(),connector.getSessionId(),intGenerator.getNext()
         ,firstCandidate.getIpAddress(),firstCandidate.getPort(),jingleLeg.getJingleSdpParamA().getMsid(),
                 jingleLeg.getJingleSdpParamA().getUfrag(),jingleLeg.getJingleSdpParamA().getPwd(),
                 jingleLeg.getJingleSdpParamA().getFingerprint(),jingleLeg.getJingleSdpParamA().getSsrc());
         connector.sendMsgToConnector(new Payload(this.getUniqueId(),msg, VertoPacket.Invite));
         System.out.println(msg);
         this.callState= CallState.SESSION_START;
+    }
+
+    public void sendHangup() {
+        String msg = Hangup.createMessage(this.getUniqueId(),connector.getSessionId(),intGenerator.getNext());
+        connector.sendMsgToConnector(new Payload(this.getUniqueId(),msg, VertoPacket.Hangup));
+        System.out.println(msg);
+        this.callState= CallState.IDLE;
     }
 
     @Override
@@ -134,10 +142,7 @@ public class VertoCallLeg extends AbstractCallLeg {
 
     @Override
     public void onTransportMessage(Payload data) {
-
-
         String msg = data.getData();
-
         CallMsgType callMsgType = getCallMsgType(msg);
         if(callMsgType!=null){
             switch (callMsgType){
@@ -155,7 +160,7 @@ public class VertoCallLeg extends AbstractCallLeg {
                     if (this.callState==CallState.SESSION_START){
                         this.callState=CallState.RINGING;
                     }
-                     this.vertoSdpParamB = new VertoSdpParamB(msg);
+                    this.vertoSdpParamB = new VertoSdpParamB(msg);
                     String ipPort = extractSdpIpAndPort(msg);
                     String[] tempArr=ipPort.split(":");
 
@@ -175,13 +180,15 @@ public class VertoCallLeg extends AbstractCallLeg {
                         this.jingleLeg.sendJingleIceResults();
                     }
                 }
-                case HANGUP -> {}
+                case HANGUP -> {
+                    this.jingleLeg.endJingleA();
+//                    this.jingleLeg.finishjingleA();
+//                    this.jingleLeg.retarct();
+                    this.callState=CallState.IDLE;
+                    this.jingleLeg.callState=CallState.IDLE;
+                }
+
                 default -> {
-
-
-
-
-
 
                 }
             }
@@ -214,5 +221,7 @@ public class VertoCallLeg extends AbstractCallLeg {
         }
         else return null;
     }
+
+
 
 }

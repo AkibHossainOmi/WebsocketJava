@@ -1,5 +1,7 @@
 package com.tb.transport.xmpp;
 
+import com.tb.calling.AbstractCallLeg;
+import com.tb.common.StringUtil;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.TransportPacket;
 import com.tb.common.UUIDGen;
 import com.tb.common.eventDriven.TransportListener;
@@ -64,7 +66,9 @@ public class XmppTransport implements Transport {
             public void processStanza(Stanza stanza) throws SmackException.NotConnectedException, InterruptedException {
                 for (TransportListener publicListener : publicListeners) {
                     publicListener.onTransportMessage(new Payload(UUID.randomUUID().toString(),
-                            stanza.toString(), TransportPacket.Payload));
+                            stanza.toXML().toString(), TransportPacket.Payload));
+
+
                 }
             }
         };

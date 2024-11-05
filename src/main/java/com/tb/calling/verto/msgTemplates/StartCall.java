@@ -41,7 +41,7 @@ public class StartCall {
         return sdp;
     }
 
-    public static String createMessage(String login,String callId,String sessionId,int id, String ip, int port,String msid,String ufrag,String pwd, String finger, String ssrc) {
+    public static String createMessage(String destinationNumber, String callId,String sessionId,int id, String ip, int port,String msid,String ufrag,String pwd, String finger, String ssrc) {
         return """
                 {
                     "jsonrpc": "2.0",
@@ -57,15 +57,15 @@ public class StartCall {
                             "useSpeak": "any",
                             "tag": "webcam",
                             "localTag": null,
-                            "login": "%s",
+                            "login": "",
                             "videoParams": {
                                 "minWidth": "1280",
                                 "minHeight": "720",
                                 "minFrameRate": 15
                             },
-                            "destination_number": "01754105098",
-                            "caller_id_name": "09646888888",
-                            "caller_id_number": "09646888888",
+                            "destination_number": "%s",
+                            "caller_id_name": "09638999999",
+                            "caller_id_number": "09638999999",
                             "videoBandwidth": {
                                 "max": 2048,
                                 "min": 1024,
@@ -82,13 +82,13 @@ public class StartCall {
                             },
                             "callID": "%s",
                             "remote_caller_id_name": "Outbound Call",
-                            "remote_caller_id_number": "01789896378" 
+                            "remote_caller_id_number": "09638999999" 
                         },
                         "sessid": "%s"
                     },
                     "id": %d
                 }
-            """.formatted(getSdp(ip, port,msid,ufrag,pwd,finger,ssrc), login,callId,sessionId,id);
+            """.formatted(getSdp(ip, port,msid,ufrag,pwd,finger,ssrc),destinationNumber,callId,sessionId,id);
 //            """.formatted(login,destinationNumber,callerIdName,callerIdNumber,callId,sessionId,remoteCallerIdNumber,id);
     }
 }

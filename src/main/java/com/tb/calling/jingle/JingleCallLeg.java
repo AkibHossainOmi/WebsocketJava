@@ -127,23 +127,27 @@ public class JingleCallLeg extends AbstractCallLeg {
         String msg = data.getData();
         if (msg.contains("jm-propose")) {
             this.callState = CallState.SESSION_START;
-            // Find the positions of the relevant substrings
-            int startIndex = msg.indexOf("id=jm-propose-") + "id=jm-propose-".length();
-            int endIndex = msg.indexOf(",type=chat");
 
             String aPartyWithDevice = StringUtil.Parser
-                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "from=", ",");
+                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "from='", "' id='");
             String[] tempArr = aPartyWithDevice.split("/");
             this.setaParty(tempArr[0]);
             this.setaPartyDeviceId(tempArr[1]);
 
             this.setbParty(StringUtil.Parser
-                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "to=", ","));
-
+                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "to='", "' from='"));
             this.setbPartyDeviceId(this.jingleConnector.xmppSettings.deviceId);
 
+
             // Extract the ID from the message
-            this.setUniqueId(msg.substring(startIndex, endIndex));
+            this.setUniqueId(StringUtil.Parser
+                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "id='jm-propose-", "' type='chat'"));
+
+            this.setPhoneNumber(StringUtil.Parser
+                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "phone='", "@localhost'"));
+
+
+
             this.ringing();
             this.proposeResponse(msg);
             Delay.sleep(1000);
@@ -192,13 +196,16 @@ public class JingleCallLeg extends AbstractCallLeg {
                 this.vertoCall = new VertoCallLeg(this.vertoConnector);
                 this.vertoCall.setUniqueId(UUIDGen.getNextAsStr());
                 this.vertoCall.setaParty("09646888888");
-                this.vertoCall.setbParty("01754105098");
+                this.vertoCall.setbParty("8801754105098");
                 this.vertoCall.addRemoteIceCandidate(candidate);
                 this.vertoCall.getConnector().addPublicListener(this.vertoCall);
                 this.vertoCall.setJingleLeg(this);
                 this.vertoCall.startSession();
                 this.callState = CallState.WAITING_RINGING;
             }
+        }
+        if(msg.contains("session-terminate")){
+            this.vertoCall.sendHangup();
         }
     }
 
@@ -232,7 +239,7 @@ public class JingleCallLeg extends AbstractCallLeg {
 
         this.sdpMessageFactory = new SDPMessageFactory(this.getbParty() + "/" + this.getbPartyDeviceId(),
                 this.getaParty() + "/" + this.getaPartyDeviceId(),
-                "TB_CUSTOM_SESSION",
+                this.getUniqueId(),
                 vertoCall.getVertoSdpParamA().getSsrc(),
                 vertoCall.getVertoSdpParamA().getMsid(),
                 vertoCall.getVertoSdpParamA().getUfrag(),
@@ -256,7 +263,29 @@ public class JingleCallLeg extends AbstractCallLeg {
         p.getMetadata().put("useRest", true);
         this.getConnector().sendMsgToConnector(p);
     }
+    public void endJingleA() {
+        String endjinglecall = END.createMessage(getaParty()+"/"+getaPartyDeviceId(),
+                getbParty()+"/"+getbPartyDeviceId(),getUniqueId());
+        Payload p= new Payload(UUIDGen.getNextAsStr(),endjinglecall, TransportPacket.Payload);
+        p.getMetadata().put("useRest", true);
+        this.getConnector().sendMsgToConnector(p);
+    }
 
+    public void finishjingleA() {
+        String finish = FINISH.createMessage(getaParty()+"/"+getaPartyDeviceId(),
+                getbParty()+"/"+getbPartyDeviceId(),getUniqueId());
+        Payload p= new Payload(UUIDGen.getNextAsStr(),finish, TransportPacket.Payload);
+        p.getMetadata().put("useRest", true);
+        this.getConnector().sendMsgToConnector(p);
+    }
+
+    public void retarct() {
+        String retract = RETRACT.createMessage(getaParty(),
+                getbParty()+"/"+getbPartyDeviceId(),getUniqueId());
+        Payload p= new Payload(UUIDGen.getNextAsStr(),retract, TransportPacket.Payload);
+        p.getMetadata().put("useRest", true);
+        this.getConnector().sendMsgToConnector(p);
+    }
     public void accept() {
         // Call Accept class and pass extractedId
         String accept= Accept.createMessage( getbParty()+"/"+getbPartyDeviceId(), getbParty(), this.getUniqueId());
