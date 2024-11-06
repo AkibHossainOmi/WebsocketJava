@@ -50,14 +50,16 @@ public class ServiceHealthTracker {
     }
 
     void startScheduler(PingOrKeepAlive pingOrKeepAlive) {
+        int initialDelay=5;//this.pingParams.initialDelay
         if (pingOrKeepAlive == PingOrKeepAlive.PING) {
-            if (pingRunning) return;
+            //if (pingRunning==true) return;
             servicePingScheduler.scheduleAtFixedRate(() -> {
                 Payload payload= connector.createServicePingMsg();
                 Payload requestToTrack= connector.createRequestFromPayload(payload);
                 //this.eventStore.add(requestToTrack);
-                //this.connector.getTransport().sendMessage(request);
-            }, this.pingParams.initialDelay, pingParams.period, pingParams.timeUnit);
+                this.connector.getTransport().sendMessage(payload);
+                System.out.println("Sent Verto: " + payload.getData());
+            }, initialDelay, pingParams.period, pingParams.timeUnit);
         } else {
             if (keepAliveRunning) return;
             keepAliveScheduler.scheduleAtFixedRate(() -> {

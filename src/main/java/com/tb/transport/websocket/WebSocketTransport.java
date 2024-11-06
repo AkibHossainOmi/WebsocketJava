@@ -14,12 +14,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class WebSocketTransport implements Transport {
     URI uri;
     protected WebSocketClient webSocketClient;
     WebSocketSettings settings;
     List<TransportListener> publicListeners =new CopyOnWriteArrayList<>();
+    ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public WebSocketTransport(WebSocketSettings settings,
                               List<TransportListener> publicListeners) {
@@ -28,9 +32,21 @@ public class WebSocketTransport implements Transport {
         for (TransportListener publicListener : publicListeners) {
             this.publicListeners.add(publicListener);
         }
-        this.webSocketClient= createWebSocketClient(publicListeners);
+        this.webSocketClient= createWebSocketClient(publicListeners, this);
+        // Start sending pings every 20 seconds
+       /* scheduler.scheduleAtFixedRate(() -> {
+            if (this.webSocketClient.isOpen()) {
+                this.webSocketClient.sendPing();
+            }
+        }, 0, 20, TimeUnit.SECONDS);*/
+
     }
-    private WebSocketClient createWebSocketClient(List<TransportListener> publicListeners) {
+    void reconnect(){
+        this.webSocketClient= createWebSocketClient(publicListeners, this);
+        this.webSocketClient.connect();
+    }
+    private WebSocketClient createWebSocketClient(List<TransportListener> publicListeners,
+                                                  WebSocketTransport myself) {
         Map<String,String> httpHeaders  = new HashMap<>();
         //httpHeaders.put("Sec-Websocket-Protocol","janus-protocol");
         return new WebSocketClient(uri,httpHeaders) {
@@ -57,7 +73,16 @@ public class WebSocketTransport implements Transport {
 
             @Override
             public void onClose(int code, String reason, boolean remote) {
+
                 System.out.printf(reason);
+
+                if (!remote){
+                    //myself.reconnect();
+                    for (TransportListener publicListener : publicListeners) {
+                        publicListener.onTransportMessage(new Payload(UUID.randomUUID().toString(),
+                                "reconnect", TransportPacket.Payload));
+                    }
+                }
             }
 
             @Override

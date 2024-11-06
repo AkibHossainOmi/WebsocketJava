@@ -155,8 +155,15 @@ public class JingleCallLeg extends AbstractCallLeg {
             this.proceed();
         }
         if (msg.contains("jm-propose") && msg.contains("callping")) {//call-ping
-            this.setCallPing(StringUtil.Parser
-                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "media='audio' ", "='true'"));
+            //this.setCallPing(StringUtil.Parser
+              //      .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "media='audio' ", "='true'"));
+            String aPartyWithDevice = StringUtil.Parser
+                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "from='", "' id='");
+            String[] tempArr = aPartyWithDevice.split("/");
+            String aParty= tempArr[0];
+            String bParty=  StringUtil.Parser
+                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(msg, "to='", "' from='");
+            this.sendCallPingResp(aParty, bParty);
         }
         if (msg.contains("session-initiate")) {
 
@@ -297,7 +304,13 @@ public class JingleCallLeg extends AbstractCallLeg {
         p.getMetadata().put("useRest", true);
         this.getConnector().sendMsgToConnector(p);
     }
-
+    public void sendCallPingResp(String aParty, String bParty) {
+        // Call Accept class and pass extractedId
+        String resp= Presence.createMessage(aParty,bParty);
+        Payload p= new Payload(UUIDGen.getNextAsStr(),resp, TransportPacket.Payload);
+        p.getMetadata().put("useRest", true);
+        this.getConnector().sendMsgToConnector(p);
+    }
     public void ringing() {
         // Call Accept class and pass extractedId
         String ringing= Ringing.createMessage( getbParty()+"/"+getbPartyDeviceId(), getaParty()+"/"+getaPartyDeviceId(), this.getUniqueId());

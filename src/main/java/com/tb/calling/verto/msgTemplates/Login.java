@@ -14,7 +14,7 @@ public class Login {
                          "socketUrl": "%s",
                          "autoReconnect": true,
                          "loglevel": "debug",
-                         "keepAlive": false,
+                         "keepAlive": true,
                          "tag": "webcam",
                          "ringer_tag": "ringer",
                          "localTag": null,

@@ -1,10 +1,13 @@
 package com.tb.calling.verto;
 
+import com.tb.calling.verto.msgTemplates.Echo;
+import com.tb.common.StringUtil;
+import com.tb.common.UUIDGen;
 import com.tb.common.uniqueIdGenerator.UniqueIntGenerator;
 import com.tb.transport.Transport;
 import com.tb.transport.websocket.WebSocketTransport;
 import com.tb.calling.verto.msgTemplates.Login;
-import com.tb.calling.verto.msgTemplates.Ping;
+import com.tb.calling.verto.msgTemplates.PingResult;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.TransportPacket;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.VertoPacket;
 import com.tb.common.eventDriven.*;
@@ -51,7 +54,7 @@ public class VertoConnector implements Connector{
         this.transportListener = createTransportListener(this);
         this.serviceHealthTracker =
                 new ServiceHealthTracker(params.servicePingParams,null, this);
-        serviceHealthTracker.startServicePingMonitor();
+        //serviceHealthTracker.startServicePingMonitor();
 
         //sendCall();
         //this.serviceHealthMonitor = new ServiceHealthMonitor(web params.servicePingParams);
@@ -90,11 +93,24 @@ public class VertoConnector implements Connector{
 
             @Override
             public void onTransportClose(Payload payload) {
+                if(payload.getData().equals("reconnect")){
+                    mySelf.connectOrInit();
+                }
             }
 
             @Override
             public void onTransportMessage(Payload payload) {
-                System.out.println("Verto:" + payload.getData());
+                System.out.println("Received Verto:" + payload.getData());
+                if(payload.getData().contains("verto.ping")){//send pong to keep connection up
+                    int id= Integer.parseInt(
+                            StringUtil.Parser
+                                    .getFirstOccuranceOfParamValueByIndexAndTerminatingStr(payload.getData(),
+                                            "id",",").substring(2));
+                    Payload pong= new Payload(UUIDGen.getNextAsStr(), PingResult.createMessage(id),
+                            VertoPacket.PingResp);
+                    mySelf.getTransport().sendMessage(pong);
+                    System.out.println("Verto Pong Sent:" + pong.getData());
+                }
                 if (payload.getPayloadType()== TransportPacket.Payload){
                     for (TransportListener publicListener : mySelf.getPublicListeners()) {
                         publicListener.onTransportMessage(payload);
@@ -130,7 +146,7 @@ public class VertoConnector implements Connector{
     }
     public void ping() {
         String data =
-                Ping.createMessage(intGenerator.getNext());
+                PingResult.createMessage(intGenerator.getNext());
         System.out.println(data);
         transport.sendMessage(new Payload(UUID.randomUUID().toString(), data, VertoPacket.Ping));
     }
@@ -147,8 +163,10 @@ public class VertoConnector implements Connector{
     }*/
     @Override
     public Payload createServicePingMsg() {
+        /*return new Payload(intGenerator.getNext().toString(),
+                PingResult.createMessage(intGenerator.getNext()), VertoPacket.Ping);*/
         return new Payload(intGenerator.getNext().toString(),
-                Ping.createMessage(intGenerator.getNext()), VertoPacket.Ping);
+                Echo.createMessage(intGenerator.getNext()), VertoPacket.Ping);
     }
     @Override
     public Payload createKeepAliveMsg() {

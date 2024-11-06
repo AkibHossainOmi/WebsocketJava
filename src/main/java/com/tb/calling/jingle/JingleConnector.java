@@ -6,7 +6,7 @@ import com.tb.common.uniqueIdGenerator.UniqueIntGenerator;
 import com.tb.transport.Transport;
 import com.tb.transport.rest.RestSettings;
 import com.tb.transport.rest.RestTransport;
-import com.tb.calling.verto.msgTemplates.Ping;
+import com.tb.calling.verto.msgTemplates.PingResult;
 import com.tb.common.eventDriven.RequestAndResponse.Enums.VertoPacket;
 import com.tb.common.eventDriven.*;
 import com.tb.transport.xmpp.XmppSettings;
@@ -81,7 +81,7 @@ public class JingleConnector implements Connector{
     @Override
     public Payload createServicePingMsg() {
         return new Payload(intGenerator.getNext().toString(),
-                Ping.createMessage(intGenerator.getNext()), VertoPacket.Ping);
+                PingResult.createMessage(intGenerator.getNext()), VertoPacket.Ping);
     }
     @Override
     public Payload createKeepAliveMsg() {
